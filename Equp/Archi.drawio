@@ -1,0 +1,130 @@
+<mxfile host="app.diagrams.net" modified="2026-09-25T00:00:00.000Z" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="schemesathi-architecture" name="SchemeSathi Architecture">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Section 1 -->
+        <mxCell id="sec1" value="1  DATA INGESTION (WEB CRAWLING &amp; MONITORING)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8E0FF;strokeColor=#8B6FD8;fontStyle=1;fontSize=18;fontColor=#25205A;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="620" height="440" as="geometry"/>
+        </mxCell>
+        <mxCell id="sources" value="&lt;b&gt;Official Government Sources&lt;/b&gt;&lt;br&gt;&lt;br&gt;gov.in&lt;br&gt;myScheme&lt;br&gt;&lt;br&gt;• Ministry Websites&lt;br&gt;• State Portals&lt;br&gt;• Scheme Pages&lt;br&gt;• Notifications&lt;br&gt;• PDFs&lt;br&gt;• Policy Documents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#888888;fontSize=13;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="170" height="330" as="geometry"/>
+        </mxCell>
+        <mxCell id="scheduler" value="&lt;b&gt;Scheduler&lt;/b&gt;&lt;br&gt;(Every 12 hours)&lt;br&gt;&lt;br&gt;APScheduler / Cron" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#4B9BE8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="240" y="90" width="170" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="crawler" value="&lt;b&gt;Web Crawler&lt;/b&gt;&lt;br&gt;(Playwright)&lt;br&gt;&lt;br&gt;• Same-domain crawling&lt;br&gt;• Follow links&lt;br&gt;• Respect robots.txt&lt;br&gt;• Handle JavaScript pages&lt;br&gt;• Detect PDFs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEE6FF;strokeColor=#7957C7;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="230" width="170" height="175" as="geometry"/>
+        </mxCell>
+        <mxCell id="webtext" value="&lt;b&gt;Web Pages&lt;/b&gt;&lt;br&gt;(HTML → Text)&lt;br&gt;&lt;br&gt;• Extract visible text&lt;br&gt;• Remove noise&lt;br&gt;• Keep clean content" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F8E9;strokeColor=#69B77B;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="440" y="90" width="170" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="pdf" value="&lt;b&gt;PDF Files&lt;/b&gt;&lt;br&gt;&lt;br&gt;• PyMuPDF (text PDFs)&lt;br&gt;• OCR (scanned PDFs)&lt;br&gt;• Extract text" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8ED;strokeColor=#E06A7A;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="440" y="250" width="170" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- Section 2 -->
+        <mxCell id="sec2" value="2  CHANGE DETECTION &amp; RAW STORAGE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF0D0;strokeColor=#E0A72C;fontStyle=1;fontSize=18;fontColor=#694500;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="20" width="430" height="440" as="geometry"/>
+        </mxCell>
+        <mxCell id="hash" value="&lt;b&gt;Change Detection&lt;/b&gt;&lt;br&gt;(SHA-256 Hash)&lt;br&gt;&lt;br&gt;• New URL → NEW&lt;br&gt;• Same hash → UNCHANGED&lt;br&gt;• Different hash → UPDATED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE7EC;strokeColor=#D84E65;fontSize=13;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="690" y="90" width="370" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="rawdb" value="&lt;b&gt;Raw Data Storage (MySQL)&lt;/b&gt;&lt;br&gt;&lt;br&gt;source_url&lt;br&gt;page_text&lt;br&gt;content_hash&lt;br&gt;scraped_at&lt;br&gt;status (new/updated/unchanged)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#4B9BE8;fontSize=12;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="735" y="285" width="280" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- Section 3 -->
+        <mxCell id="sec3" value="3  DATA PROCESSING &amp; SCHEME EXTRACTION" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E5F7EA;strokeColor=#70B783;fontStyle=1;fontSize=18;fontColor=#245B34;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="20" width="470" height="440" as="geometry"/>
+        </mxCell>
+        <mxCell id="cleaner" value="&lt;b&gt;Data Cleaner&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Remove irrelevant content&lt;br&gt;• Clean text&lt;br&gt;• Extract scheme information&lt;br&gt;• Handle tables and lists" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEE6FF;strokeColor=#8A70D6;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="90" width="190" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="cleanDB" value="&lt;b&gt;Clean Data Storage (MySQL)&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Structured scheme data&lt;br&gt;• Version tracking&lt;br&gt;• Last updated&lt;br&gt;• Metadata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#4B9BE8;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="90" width="190" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="extract" value="&lt;b&gt;Scheme Extraction&lt;/b&gt;&lt;br&gt;(Structured Data)&lt;br&gt;&lt;br&gt;scheme_name&lt;br&gt;description&lt;br&gt;state, department&lt;br&gt;eligibility, benefits&lt;br&gt;documents_required&lt;br&gt;application_process&lt;br&gt;official_url" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF5F0;strokeColor=#55B39B;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="275" width="190" height="155" as="geometry"/>
+        </mxCell>
+        <mxCell id="admin" value="&lt;b&gt;Admin Validation&lt;/b&gt;&lt;br&gt;(Optional)&lt;br&gt;&lt;br&gt;• Review extracted data&lt;br&gt;• Approve / reject&lt;br&gt;• Manual corrections" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE9EE;strokeColor=#D96A78;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="275" width="190" height="155" as="geometry"/>
+        </mxCell>
+
+        <!-- Section 4 -->
+        <mxCell id="sec4" value="4  KNOWLEDGE BASE (EMBEDDINGS &amp; VECTOR DATABASE)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E5F1FF;strokeColor=#6EA2E5;fontStyle=1;fontSize=18;fontColor=#204E83;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="330" y="490" width="1030" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="chunk" value="&lt;b&gt;Chunking&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Split cleaned content&lt;br&gt;• Preserve metadata&lt;br&gt;• Optimal chunk size" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#5E9BE0;fontSize=13;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="560" width="250" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="embed" value="&lt;b&gt;Embeddings&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Sentence Transformers&lt;br&gt;• Create vector embeddings&lt;br&gt;• Store metadata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#5E9BE0;fontSize=13;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="700" y="560" width="250" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="qdrant" value="&lt;b&gt;Qdrant Vector Database&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Store embeddings&lt;br&gt;• Semantic search&lt;br&gt;• Metadata filtering&lt;br&gt;• Fast retrieval" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#5E9BE0;fontSize=13;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="550" width="290" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Frontend -->
+        <mxCell id="frontendSec" value="USER SIDE (FRONTEND)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE5EF;strokeColor=#DD7D9D;fontStyle=1;fontSize=18;fontColor=#7A2444;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="20" y="760" width="360" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="frontend" value="&lt;b&gt;React / Next.js&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Chat Interface&lt;br&gt;• Search Schemes&lt;br&gt;• Personalized Recommendations&lt;br&gt;• View Scheme Details&lt;br&gt;• Source/Citation Links&lt;br&gt;• User Profile Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E9BE0;fontSize=12;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="45" y="820" width="310" height="190" as="geometry"/>
+        </mxCell>
+
+        <!-- Backend -->
+        <mxCell id="sec5" value="5  API &amp; RAG PIPELINE (BACKEND)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E5F7EA;strokeColor=#70B783;fontStyle=1;fontSize=18;fontColor=#245B34;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="400" y="760" width="890" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="profile" value="&lt;b&gt;User Profile&lt;/b&gt;&lt;br&gt;&lt;br&gt;• State&lt;br&gt;• Occupation&lt;br&gt;• Age&lt;br&gt;• Category&lt;br&gt;• Income (optional)&lt;br&gt;• Preferences" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEE6FF;strokeColor=#8A70D6;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="430" y="820" width="170" height="175" as="geometry"/>
+        </mxCell>
+        <mxCell id="fastapi" value="&lt;b&gt;FastAPI&lt;/b&gt;&lt;br&gt;&lt;br&gt;• REST API endpoints&lt;br&gt;• Query processing&lt;br&gt;• Authentication&lt;br&gt;• User profile handling&lt;br&gt;• Connects to RAG pipeline" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF1FF;strokeColor=#4B9BE8;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="625" y="820" width="190" height="175" as="geometry"/>
+        </mxCell>
+        <mxCell id="retriever" value="&lt;b&gt;Retriever&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Semantic search (Qdrant)&lt;br&gt;• Get relevant scheme chunks&lt;br&gt;• Apply filters (state, category, etc.)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE7EC;strokeColor=#D84E65;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="845" y="805" width="195" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="context" value="&lt;b&gt;Relevant Context&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Top relevant chunks&lt;br&gt;• Scheme name + URL metadata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2D8;strokeColor=#E2A62C;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="805" width="195" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="ollama" value="&lt;b&gt;Ollama (Local LLM)&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Generate grounded answer&lt;br&gt;• Use only retrieved context&lt;br&gt;• No hallucination" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEE6FF;strokeColor=#8A70D6;fontSize=12;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="845" y="950" width="195" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Response -->
+        <mxCell id="response" value="&lt;b&gt;RESPONSE TO USER&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Scheme name&lt;br&gt;• Eligibility&lt;br&gt;• Benefits&lt;br&gt;• Required documents&lt;br&gt;• How to apply&lt;br&gt;• Important conditions&lt;br&gt;• Official source URL&lt;br&gt;• Simple explanation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE5EF;strokeColor=#DD7D9D;fontSize=13;align=left;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="760" width="250" height="280" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="sources" target="crawler"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="scheduler" target="crawler"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="crawler" target="webtext"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="crawler" target="pdf"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="webtext" target="hash"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="pdf" target="hash"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="hash" target="rawdb"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="rawdb" target="cleaner"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="cleaner" target="extract"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="extract" target="cleanDB"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="cleanDB" target="admin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" value="Approved data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="admin" target="chunk"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="chunk" target="embed"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="embed" target="qdrant"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="qdrant" target="retriever"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="frontend" target="fastapi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" value="User query + profile" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="fastapi" target="retriever"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="retriever" target="context"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="context" target="ollama"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e20" value="Grounded response + sources" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="ollama" target="response"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e21" value="API response" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="response" target="frontend"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e22" value="User profile" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="profile" target="fastapi"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
