@@ -1,0 +1,86 @@
+[
+  {
+    "scheme_name": "SSP Post-Matric Scholarship Scheme",
+    "state": "Karnataka",
+    "department": "Social Welfare Department",
+    "raw_html": "<div><h1>SSP Post-Matric Scholarship</h1><p>The Government of Karnataka invites applications for the Post-Matric Scholarship from eligible SC/ST students studying in post-secondary institutions.</p><div class='menu'>Navigation Menu</div></div>",
+    "description": "Financial assistance provided for SC/ST students pursuing higher education across Karnataka colleges.",
+    "benefits": [
+      "Full maintenance allowance paid monthly",
+      "Compulsory non-refundable fee reimbursement",
+      "Book bank facilities for professional courses"
+    ],
+    "eligibility": [
+      "Applicants must be between 18 and 30 years of age",
+      "Must belong to SC or ST category in Karnataka",
+      "Annual family income should not exceed Rs. 2.5 lakh",
+      "Must have passed previous qualifying examination with minimum 50% marks"
+    ],
+    "occupation": ["Student"],
+    "category": ["SC", "ST"],
+    "documents_required": [
+      "Aadhaar Card",
+      "Caste Certificate",
+      "Income Certificate (showing family income below Rs 2.5 lakhs)",
+      "SSLC Marks Card",
+      "Bank Account Passbook linked with Aadhaar"
+    ],
+    "application_process": "1. Visit official SSP Portal at https://ssp.karnataka.gov.in/\n2. Register using Aadhaar number and e-KYC\n3. Upload required documents and submit online application.",
+    "official_url": "https://ssp.karnataka.gov.in/",
+    "source_date": "2026-10-01"
+  },
+  {
+    "title": "Gruha Lakshmi Scheme",
+    "state": "Karnataka",
+    "department": "Department of Women and Child Development",
+    "description": "<div class='header'>Official Notice</div>Financial security scheme offering monthly financial support of ₹2,000 to the woman head of eligible families in Karnataka.\n\nAll Rights Reserved © 2026 Government of Karnataka.",
+    "benefits": [
+      "Direct Benefit Transfer (DBT) of ₹2,000 per month into bank account",
+      "Empowerment of female heads of households"
+    ],
+    "eligibility": [
+      "Woman head of the family named in BPL or APL ration cards",
+      "Age of applicant must be minimum 18 years and below 60 years",
+      "Neither applicant nor spouse should be an income tax payer",
+      "Annual family income should not exceed ₹2 lakh"
+    ],
+    "occupation": ["Woman / Widow"],
+    "category": ["BPL", "General"],
+    "documents_required": [
+      "Aadhaar Card of female head",
+      "Ration Card (BPL/APL)",
+      "Bank Account details linked with Aadhaar",
+      "Spouse Aadhaar Card"
+    ],
+    "application_process": "Apply online at Seva Sindhu Portal (https://sevasindhugs1.karnataka.gov.in/gl-sp/) or visit nearest Grama One/Karnataka One centers.",
+    "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/",
+    "source_date": "2026-10-02"
+  },
+  {
+    "scheme_name": "Yuva Nidhi Scheme",
+    "state": "Karnataka",
+    "department": "Department of Skill Development and Entrepreneurship",
+    "description": "Unemployment assistance scheme for degree and diploma graduates in Karnataka.",
+    "benefits": [
+      "₹3,000 monthly allowance for unemployed graduates",
+      "₹1,500 monthly allowance for unemployed diploma holders",
+      "Skill training assistance for job seekers"
+    ],
+    "eligibility": [
+      "Applicants must be between 18 and 30 years of age",
+      "Must have passed Degree/Diploma in academic year 2023-24 onwards",
+      "Must be unemployed for at least 180 days after graduation"
+    ],
+    "occupation": ["Unemployed Youth", "Student"],
+    "category": ["General"],
+    "documents_required": [
+      "Degree/Diploma Marksheets",
+      "Aadhaar Card",
+      "Domicile Certificate of Karnataka",
+      "Bank Passbook"
+    ],
+    "application_process": "Register online on Seva Sindhu Portal with Aadhaar authentication.",
+    "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/",
+    "source_date": "2026-10-03"
+  }
+]

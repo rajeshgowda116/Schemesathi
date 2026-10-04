@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schemesathi Admin Panel - Web Scraper Dashboard</title>
+    <!-- Bootstrap 5 CSS & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-light: #f8fafc;
+        }
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            background: #1e293b;
+            color: #fff;
+            z-index: 1000;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar .nav-link {
+            color: #94a3b8;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            margin: 4px 12px;
+            transition: all 0.2s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #ffffff;
+            background: var(--primary-color);
+        }
+        .sidebar .brand {
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            border-bottom: 1px solid #334155;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        .badge-success { background-color: #10b981; }
+        .badge-error { background-color: #ef4444; }
+        .badge-running { background-color: #f59e0b; }
+        .table-responsive {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .log-box {
+            background: #0f172a;
+            color: #38bdf8;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        .search-box {
+            max-width: 350px;
+        }
+        .modal-body pre {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-spider me-2"></i>Schemesathi Admin
+        </div>
+        <div class="nav flex-column mt-3">
+            <a class="nav-link active" id="tab-overview-btn" href="#overview" onclick="showTab('overview')">
+                <i class="fa-solid fa-chart-line me-2"></i> Dashboard Overview
+            </a>
+            <a class="nav-link" id="tab-data-btn" href="#data" onclick="showTab('data')">
+                <i class="fa-solid fa-database me-2"></i> Scraped Data (SQL)
+            </a>
+            <a class="nav-link" id="tab-pdfs-btn" href="#pdfs" onclick="showTab('pdfs')">
+                <i class="fa-solid fa-file-pdf me-2"></i> Scraped PDFs
+            </a>
+            <a class="nav-link" id="tab-control-btn" href="#control" onclick="showTab('control')">
+                <i class="fa-solid fa-gears me-2"></i> Scraper Control Panel
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Top Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1">Web Scraper Admin Panel</h3>
+                <p class="text-muted mb-0">Monitor & manage scraped data from Karnataka Government Portals</p>
+            </div>
+            <div>
+                <button class="btn btn-primary px-4 py-2" onclick="triggerScrape()">
+                    <i class="fa-solid fa-play me-2"></i> Run Scraper Now
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="tab-overview" class="tab-pane">
+            <!-- Stat Cards Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card stat-card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                                <i class="fa-solid fa-globe"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Total Scraped Pages</div>
+                                <h3 class="fw-bold mb-0" id="stat-total-pages">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-danger bg-opacity-10 text-danger me-3">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Downloaded PDFs</div>
+                                <h3 class="fw-bold mb-0" id="stat-total-pdfs">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                                <i class="fa-solid fa-hard-drive"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">PDF Storage Size</div>
+                                <h3 class="fw-bold mb-0" id="stat-pdf-size">0 B</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+                                <i class="fa-solid fa-rotate"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Last Scrape Status</div>
+                                <span class="badge bg-secondary fs-6" id="stat-last-status">IDLE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target Portals List Card -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-link me-2 text-primary"></i> Target Websites Monitored</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Seva Sindhu GL-SP</strong>
+                                    <div class="text-muted small">https://sevasindhugs1.karnataka.gov.in/gl-sp/</div>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>State Scholarship Portal (SSP)</strong>
+                                    <div class="text-muted small">https://ssp.karnataka.gov.in/</div>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Karnataka Government Portal</strong>
+                                    <div class="text-muted small">https://www.karnataka.gov.in/</div>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> Last Run Summary</h5>
+                        <p class="text-muted mb-2">Started At: <span id="run-started-at" class="fw-bold text-dark">-</span></p>
+                        <p class="text-muted mb-2">Ended At: <span id="run-ended-at" class="fw-bold text-dark">-</span></p>
+                        <p class="text-muted mb-2">Pages Scraped in Run: <span id="run-pages" class="fw-bold text-dark">0</span></p>
+                        <p class="text-muted mb-2">PDFs Downloaded in Run: <span id="run-pdfs" class="fw-bold text-dark">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SCRAPED DATA (SQL) -->
+        <div id="tab-data" class="tab-pane d-none">
+            <div class="table-responsive">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Scraped HTML Pages & Raw SQL Data</h5>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="data-search-input" class="form-control search-box" placeholder="Search by title or URL..." oninput="fetchScrapedData()">
+                        <select id="domain-filter" class="form-select" style="width: 200px;" onchange="fetchScrapedData()">
+                            <option value="">All Domains</option>
+                            <option value="sevasindhugs1.karnataka.gov.in">Seva Sindhu</option>
+                            <option value="ssp.karnataka.gov.in">SSP Portal</option>
+                            <option value="www.karnataka.gov.in">Karnataka Gov</option>
+                        </select>
+                    </div>
+                </div>
+                <table class="table table-hover align-middle" id="scraped-data-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Page Title</th>
+                            <th>Domain</th>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>PDFs Found</th>
+                            <th>Scraped Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scraped-data-tbody">
+                        <tr><td colspan="8" class="text-center text-muted">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: SCRAPED PDFS -->
+        <div id="tab-pdfs" class="tab-pane d-none">
+            <div class="table-responsive">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Scraped PDF Documents (Saved in SCRAPED PDF Folder)</h5>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="fetchScrapedPDFs()">
+                        <i class="fa-solid fa-rotate me-1"></i> Refresh List
+                    </button>
+                </div>
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>File Name</th>
+                            <th>Source Page URL</th>
+                            <th>Original PDF Link</th>
+                            <th>File Size</th>
+                            <th>Download Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scraped-pdfs-tbody">
+                        <tr><td colspan="7" class="text-center text-muted">Loading PDFs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 4: SCRAPER CONTROL PANEL -->
+        <div id="tab-control" class="tab-pane d-none">
+            <div class="card p-4 border-0 shadow-sm rounded-3">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-terminal me-2 text-primary"></i> Manual Scraper Control & Live Logs</h5>
+                <p class="text-muted mb-4">Click the button below to initiate a fresh scraping run across the configured target portals.</p>
+                
+                <div class="d-flex gap-3 align-items-center mb-4">
+                    <button class="btn btn-primary px-4 py-2" id="trigger-btn" onclick="triggerScrape()">
+                        <i class="fa-solid fa-play me-2"></i> Start Scraping Process
+                    </button>
+                    <span id="scraper-spinner" class="spinner-border spinner-border-sm text-primary d-none" role="status"></span>
+                    <span id="scraper-status-text" class="fw-bold text-secondary">Idle</span>
+                </div>
+
+                <h6 class="fw-bold mb-2">Live Execution Log Output:</h6>
+                <div class="log-box" id="live-log-box">
+                    Waiting for scraper output log...
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal for viewing Raw Scraped Data Details -->
+    <div class="modal fade" id="dataDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modal-title">Page Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>URL:</strong> <a id="modal-url" href="#" target="_blank"></a></p>
+                    <p><strong>Domain:</strong> <span id="modal-domain"></span></p>
+                    <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                    
+                    <ul class="nav nav-tabs mb-3" id="modalTab" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-content" type="button">Extracted Clean Text</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="html-tab" data-bs-toggle="tab" data-bs-target="#html-content" type="button">Raw HTML Source</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="text-content">
+                            <pre id="modal-text"></pre>
+                        </div>
+                        <div class="tab-pane fade" id="html-content">
+                            <pre id="modal-html"></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentTab = 'overview';
+
+        function showTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('d-none'));
+            document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.remove('d-none');
+            document.getElementById(`tab-${tabName}-btn`).classList.add('active');
+
+            if (tabName === 'overview') fetchStats();
+            if (tabName === 'data') fetchScrapedData();
+            if (tabName === 'pdfs') fetchScrapedPDFs();
+            if (tabName === 'control') fetchLogs();
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+
+                document.getElementById('stat-total-pages').innerText = data.total_pages_scraped || 0;
+                document.getElementById('stat-total-pdfs').innerText = data.total_pdfs || 0;
+                document.getElementById('stat-pdf-size').innerText = data.total_pdf_size_formatted || '0 B';
+
+                const statusBadge = document.getElementById('stat-last-status');
+                statusBadge.innerText = data.last_scrape.status || 'IDLE';
+                if (data.last_scrape.status === 'COMPLETED') statusBadge.className = 'badge bg-success fs-6';
+                else if (data.last_scrape.status === 'RUNNING') statusBadge.className = 'badge bg-warning text-dark fs-6';
+                else if (data.last_scrape.status === 'FAILED') statusBadge.className = 'badge bg-danger fs-6';
+
+                document.getElementById('run-started-at').innerText = data.last_scrape.started_at || 'Never';
+                document.getElementById('run-ended-at').innerText = data.last_scrape.ended_at || 'N/A';
+                document.getElementById('run-pages').innerText = data.last_scrape.pages_scraped || 0;
+                document.getElementById('run-pdfs').innerText = data.last_scrape.pdfs_downloaded || 0;
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        }
+
+        async function fetchScrapedData() {
+            const query = document.getElementById('data-search-input').value;
+            const domain = document.getElementById('domain-filter').value;
+
+            let url = `/api/data?q=${encodeURIComponent(query)}&domain=${encodeURIComponent(domain)}`;
+            try {
+                const res = await fetch(url);
+                const items = await res.json();
+
+                const tbody = document.getElementById('scraped-data-tbody');
+                tbody.innerHTML = '';
+
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No scraped data found</td></tr>';
+                    return;
+                }
+
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.id}</td>
+                        <td class="fw-bold text-truncate" style="max-width: 220px;">${item.title || 'Untitled'}</td>
+                        <td><span class="badge bg-light text-dark border">${item.domain}</span></td>
+                        <td><a href="${item.url}" target="_blank" class="text-decoration-none text-truncate d-inline-block" style="max-width: 250px;">${item.url}</a></td>
+                        <td><span class="badge ${item.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'}">${item.status}</span></td>
+                        <td><span class="badge bg-secondary">${item.pdf_count}</span></td>
+                        <td>${new Date(item.scraped_at).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewDetails(${item.id})">
+                                <i class="fa-solid fa-eye me-1"></i> View Raw Data
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error fetching scraped data:", err);
+            }
+        }
+
+        async function fetchScrapedPDFs() {
+            try {
+                const res = await fetch('/api/pdfs');
+                const items = await res.json();
+
+                const tbody = document.getElementById('scraped-pdfs-tbody');
+                tbody.innerHTML = '';
+
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No PDFs downloaded yet</td></tr>';
+                    return;
+                }
+
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.id}</td>
+                        <td class="fw-bold"><i class="fa-solid fa-file-pdf text-danger me-2"></i>${item.file_name}</td>
+                        <td><a href="${item.page_url}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">${item.page_url}</a></td>
+                        <td><a href="${item.pdf_url}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">${item.pdf_url}</a></td>
+                        <td>${formatBytes(item.file_size_bytes)}</td>
+                        <td>${new Date(item.downloaded_at).toLocaleString()}</td>
+                        <td>
+                            <a href="/api/pdf-download/${item.id}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fa-solid fa-download me-1"></i> Download PDF
+                            </a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error fetching PDFs:", err);
+            }
+        }
+
+        async function viewDetails(id) {
+            try {
+                const res = await fetch(`/api/data/${id}`);
+                const item = await res.json();
+
+                document.getElementById('modal-title').innerText = item.title || 'Page Details';
+                document.getElementById('modal-url').innerText = item.url;
+                document.getElementById('modal-url').href = item.url;
+                document.getElementById('modal-domain').innerText = item.domain;
+                document.getElementById('modal-status').innerText = item.status;
+                document.getElementById('modal-text').innerText = item.content_text || 'No text extracted';
+                document.getElementById('modal-html').innerText = item.raw_html || 'No raw HTML available';
+
+                const modal = new bootstrap.Modal(document.getElementById('dataDetailModal'));
+                modal.show();
+            } catch (err) {
+                alert("Failed to load page details: " + err);
+            }
+        }
+
+        async function triggerScrape() {
+            if (!confirm("Start scraping process now?")) return;
+
+            document.getElementById('scraper-spinner').classList.remove('d-none');
+            document.getElementById('scraper-status-text').innerText = 'Scraper Running...';
+
+            try {
+                const res = await fetch('/api/scrape', { method: 'POST' });
+                const data = await res.json();
+                alert(data.message);
+                showTab('control');
+                pollScraperStatus();
+            } catch (err) {
+                alert("Failed to trigger scraper: " + err);
+                document.getElementById('scraper-spinner').classList.add('d-none');
+                document.getElementById('scraper-status-text').innerText = 'Idle';
+            }
+        }
+
+        async function fetchLogs() {
+            try {
+                const res = await fetch('/api/scrape/status');
+                const data = await res.json();
+                
+                const logBox = document.getElementById('live-log-box');
+                logBox.innerText = data.summary || "No active logs available.";
+                logBox.scrollTop = logBox.scrollHeight;
+
+                if (data.status === 'RUNNING') {
+                    document.getElementById('scraper-spinner').classList.remove('d-none');
+                    document.getElementById('scraper-status-text').innerText = 'Scraper Running...';
+                } else {
+                    document.getElementById('scraper-spinner').classList.add('d-none');
+                    document.getElementById('scraper-status-text').innerText = data.status || 'Idle';
+                }
+            } catch (err) {
+                console.error("Error fetching logs:", err);
+            }
+        }
+
+        function pollScraperStatus() {
+            const interval = setInterval(async () => {
+                await fetchLogs();
+                await fetchStats();
+                const res = await fetch('/api/scrape/status');
+                const data = await res.json();
+                if (data.status !== 'RUNNING') {
+                    clearInterval(interval);
+                }
+            }, 3000);
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Initial Load
+        fetchStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SchemeSathi - Cleaned Government Schemes Intelligence</title>
+    <!-- Bootstrap 5 CSS & FontAwesome Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-hover-border: #818cf8;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+        }
+
+        .hero-banner {
+            background: var(--bg-gradient);
+            color: #ffffff;
+            padding: 45px 0 35px 0;
+            border-bottom: 4px solid var(--primary-color);
+        }
+
+        .scheme-box-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .scheme-box {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scheme-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--card-hover-border);
+            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.12);
+        }
+
+        .scheme-box .card-body {
+            padding: 24px;
+        }
+
+        .scheme-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .scheme-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+
+        .state-badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dept-name {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .scheme-desc {
+            font-size: 0.92rem;
+            color: #475569;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .badge-chip {
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-age { background: #fef3c7; color: #92400e; }
+        .badge-income { background: #dcfce7; color: #166534; }
+        .badge-category { background: #f3e8ff; color: #6b21a8; }
+        .badge-occupation { background: #e0f2fe; color: #075985; }
+
+        .scheme-box-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-container {
+            max-width: 650px;
+            margin: -25px auto 35px auto;
+            position: relative;
+            z-index: 100;
+        }
+
+        .search-input {
+            height: 56px;
+            border-radius: 12px;
+            padding-left: 50px;
+            font-size: 1rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 18px;
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+
+        .counter-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Hero Section -->
+    <div class="hero-banner">
+        <div class="container text-center">
+            <h1 class="fw-bold mb-2"><i class="fa-solid fa-graduation-cap me-2 text-warning"></i>SchemeSathi</h1>
+            <p class="lead text-light opacity-75 mb-3">AI-Powered Karnataka Government Scheme Intelligence System</p>
+            <span class="counter-badge" id="scheme-counter"><i class="fa-solid fa-box-archive me-1"></i> Cleaned Schemes: Loading...</span>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="container">
+        <div class="search-container">
+            <div class="position-relative">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" class="form-control search-input" placeholder="Search schemes by name, department, category, or eligibility..." oninput="filterSchemes()">
+            </div>
+        </div>
+
+        <!-- Filter Chips Row -->
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4" id="filter-chips">
+            <button class="btn btn-sm btn-dark px-3 rounded-pill active" onclick="setCategoryFilter('ALL', this)">All Schemes</button>
+            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('SC', this)">SC / ST</button>
+            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('Student', this)">Students</button>
+            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('Woman', this)">Women</button>
+            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('BPL', this)">BPL Card</button>
+            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('Youth', this)">Unemployed Youth</button>
+        </div>
+
+        <!-- Scheme Card Boxes Grid -->
+        <div class="scheme-box-grid mb-5" id="schemeGrid">
+            <!-- Scheme boxes will be dynamically rendered here -->
+        </div>
+    </div>
+
+    <!-- Modal for Scheme Full Details -->
+    <div class="modal fade" id="schemeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header bg-light">
+                    <div>
+                        <span class="state-badge mb-1 d-inline-block" id="modal-state">Karnataka</span>
+                        <h4 class="modal-title fw-bold text-dark" id="modal-title">Scheme Title</h4>
+                        <div class="text-muted small fw-semibold" id="modal-dept">Department</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-align-left me-1"></i> Scheme Description</h6>
+                    <p id="modal-desc" class="text-secondary mb-4"></p>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted d-block fw-bold mb-1">AGE REQUIREMENTS</small>
+                                <span class="fw-bold text-dark" id="modal-age">Not specified</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted d-block fw-bold mb-1">MAX ANNUAL INCOME</small>
+                                <span class="fw-bold text-dark" id="modal-income">Not specified</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-gift me-1"></i> Key Benefits</h6>
+                    <ul id="modal-benefits" class="mb-4"></ul>
+
+                    <h6 class="fw-bold text-warning text-dark mb-2"><i class="fa-solid fa-user-check me-1"></i> Eligibility Criteria</h6>
+                    <ul id="modal-eligibility" class="mb-4"></ul>
+
+                    <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-folder-open me-1"></i> Required Documents</h6>
+                    <ul id="modal-docs" class="mb-4"></ul>
+
+                    <h6 class="fw-bold text-info text-dark mb-2"><i class="fa-solid fa-list-check me-1"></i> Application Process</h6>
+                    <p id="modal-process" class="text-secondary mb-3"></p>
+                </div>
+                <div class="modal-footer bg-light justify-content-between">
+                    <span class="text-muted small">Source Date: <span id="modal-date">-</span></span>
+                    <a id="modal-url" href="#" target="_blank" class="btn btn-primary px-4 rounded-pill">
+                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Official Portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let allSchemes = [];
+        let currentFilter = 'ALL';
+
+        // Embedded default schemes fallback for offline / direct file opening
+        const defaultSchemesData = [
+            {
+                "scheme_name": "SSP Post-Matric Scholarship Scheme",
+                "state": "Karnataka",
+                "department": "Social Welfare Department",
+                "description": "Financial assistance provided for SC/ST students pursuing higher education across Karnataka colleges.",
+                "benefits": [
+                    "Full maintenance allowance paid monthly",
+                    "Compulsory non-refundable fee reimbursement",
+                    "Book bank facilities for professional courses"
+                ],
+                "eligibility": [
+                    "Applicants must be between 18 and 30 years of age",
+                    "Must belong to SC or ST category in Karnataka",
+                    "Annual family income should not exceed Rs. 2.5 lakh",
+                    "Must have passed previous qualifying examination with minimum 50% marks"
+                ],
+                "age_min": 18,
+                "age_max": 30,
+                "income_min": null,
+                "income_max": 250000.0,
+                "occupation": ["Student"],
+                "category": ["SC", "ST"],
+                "documents_required": [
+                    "Aadhaar Card",
+                    "Caste Certificate",
+                    "Income Certificate (showing family income below Rs 2.5 lakhs)",
+                    "SSLC Marks Card",
+                    "Bank Account Passbook linked with Aadhaar"
+                ],
+                "application_process": "1. Visit official SSP Portal at https://ssp.karnataka.gov.in/\n2. Register using Aadhaar number and e-KYC\n3. Upload required documents and submit online application.",
+                "official_url": "https://ssp.karnataka.gov.in/",
+                "source_date": "2026-10-01"
+            },
+            {
+                "scheme_name": "Gruha Lakshmi Scheme",
+                "state": "Karnataka",
+                "department": "Department of Women and Child Development",
+                "description": "Financial security scheme offering monthly financial support of ₹2,000 to the woman head of eligible families in Karnataka.",
+                "benefits": [
+                    "Direct Benefit Transfer (DBT) of ₹2,000 per month into bank account",
+                    "Empowerment of female heads of households"
+                ],
+                "eligibility": [
+                    "Woman head of the family named in BPL or APL ration cards",
+                    "Age of applicant must be minimum 18 years and below 60 years",
+                    "Neither applicant nor spouse should be an income tax payer",
+                    "Annual family income should not exceed ₹2 lakh"
+                ],
+                "age_min": 18,
+                "age_max": 60,
+                "income_min": null,
+                "income_max": 200000.0,
+                "occupation": ["Woman / Widow"],
+                "category": ["BPL", "General"],
+                "documents_required": [
+                    "Aadhaar Card of female head",
+                    "Ration Card (BPL/APL)",
+                    "Bank Account details linked with Aadhaar",
+                    "Spouse Aadhaar Card"
+                ],
+                "application_process": "Apply online at Seva Sindhu Portal (https://sevasindhugs1.karnataka.gov.in/gl-sp/) or visit nearest Grama One/Karnataka One centers.",
+                "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/",
+                "source_date": "2026-10-02"
+            },
+            {
+                "scheme_name": "Yuva Nidhi Scheme",
+                "state": "Karnataka",
+                "department": "Department of Skill Development and Entrepreneurship",
+                "description": "Unemployment assistance scheme for degree and diploma graduates in Karnataka.",
+                "benefits": [
+                    "₹3,000 monthly allowance for unemployed graduates",
+                    "₹1,500 monthly allowance for unemployed diploma holders",
+                    "Skill training assistance for job seekers"
+                ],
+                "eligibility": [
+                    "Applicants must be between 18 and 30 years of age",
+                    "Must have passed Degree/Diploma in academic year 2023-24 onwards",
+                    "Must be unemployed for at least 180 days after graduation"
+                ],
+                "age_min": 18,
+                "age_max": 30,
+                "income_min": null,
+                "income_max": null,
+                "occupation": ["Unemployed Youth", "Student"],
+                "category": ["General"],
+                "documents_required": [
+                    "Degree/Diploma Marksheets",
+                    "Aadhaar Card",
+                    "Domicile Certificate of Karnataka",
+                    "Bank Passbook"
+                ],
+                "application_process": "Register online on Seva Sindhu Portal with Aadhaar authentication.",
+                "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/",
+                "source_date": "2026-10-03"
+            }
+        ];
+
+        async function loadSchemes() {
+            try {
+                // Try fetching cleaned JSON file
+                const response = await fetch('scheme_cleaner/data/cleaned/cleaned_schemes.json');
+                if (response.ok) {
+                    allSchemes = await response.json();
+                } else {
+                    allSchemes = defaultSchemesData;
+                }
+            } catch (err) {
+                console.log("Loading fallback default schemes data...");
+                allSchemes = defaultSchemesData;
+            }
+
+            document.getElementById('scheme-counter').innerHTML = `<i class="fa-solid fa-box-archive me-1"></i> Cleaned Schemes: <strong>${allSchemes.length}</strong>`;
+            renderSchemes(allSchemes);
+        }
+
+        function renderSchemes(schemes) {
+            const grid = document.getElementById('schemeGrid');
+            grid.innerHTML = '';
+
+            if (schemes.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fa-solid fa-folder-open text-muted fa-3x mb-3"></i>
+                        <h5 class="text-secondary fw-bold">No matching schemes found</h5>
+                        <p class="text-muted">Try adjusting your search query or filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            schemes.forEach((s, index) => {
+                const box = document.createElement('div');
+                box.className = 'scheme-box';
+
+                // Format badges
+                let ageBadge = s.age_min || s.age_max ? `<span class="badge-chip badge-age"><i class="fa-solid fa-user-clock"></i> Age: ${s.age_min || '0'}-${s.age_max || '60+'} yrs</span>` : '';
+                let incomeBadge = s.income_max ? `<span class="badge-chip badge-income"><i class="fa-solid fa-wallet"></i> Max ₹${formatCurrency(s.income_max)}</span>` : '';
+                let categoryBadges = (s.category || []).map(c => `<span class="badge-chip badge-category"><i class="fa-solid fa-tags"></i> ${c}</span>`).join(' ');
+                let occBadges = (s.occupation || []).map(o => `<span class="badge-chip badge-occupation"><i class="fa-solid fa-user-gear"></i> ${o}</span>`).join(' ');
+
+                box.innerHTML = `
+                    <div class="card-body">
+                        <div class="scheme-box-header">
+                            <span class="state-badge">${s.state || 'Karnataka'}</span>
+                            <i class="fa-solid fa-building-columns text-primary"></i>
+                        </div>
+                        <h3 class="scheme-title">${s.scheme_name}</h3>
+                        <div class="dept-name">${s.department || 'Government of Karnataka'}</div>
+                        <p class="scheme-desc">${stripHTML(s.description)}</p>
+
+                        <div class="d-flex flex-wrap gap-2 mt-auto">
+                            ${ageBadge}
+                            ${incomeBadge}
+                            ${categoryBadges}
+                            ${occBadges}
+                        </div>
+                    </div>
+                    <div class="scheme-box-footer">
+                        <span class="text-muted small"><i class="fa-solid fa-list-check me-1"></i> ${s.eligibility ? s.eligibility.length : 0} Eligibility Criteria</span>
+                        <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="openSchemeModal(${index})">
+                            View Details <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(box);
+            });
+        }
+
+        function filterSchemes() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = allSchemes.filter(s => {
+                const matchesQuery = !query ||
+                    s.scheme_name.toLowerCase().includes(query) ||
+                    (s.department && s.department.toLowerCase().includes(query)) ||
+                    (s.description && s.description.toLowerCase().includes(query)) ||
+                    (s.category && s.category.some(c => c.toLowerCase().includes(query))) ||
+                    (s.occupation && s.occupation.some(o => o.toLowerCase().includes(query)));
+
+                const matchesFilter = currentFilter === 'ALL' ||
+                    (s.category && s.category.some(c => c.toLowerCase().includes(currentFilter.toLowerCase()))) ||
+                    (s.occupation && s.occupation.some(o => o.toLowerCase().includes(currentFilter.toLowerCase())));
+
+                return matchesQuery && matchesFilter;
+            });
+
+            renderSchemes(filtered);
+        }
+
+        function setCategoryFilter(filterVal, btnElem) {
+            currentFilter = filterVal;
+            document.querySelectorAll('#filter-chips button').forEach(b => {
+                b.classList.remove('btn-dark', 'active');
+                b.classList.add('btn-outline-secondary');
+            });
+            btnElem.classList.remove('btn-outline-secondary');
+            btnElem.classList.add('btn-dark', 'active');
+            filterSchemes();
+        }
+
+        function openSchemeModal(index) {
+            const s = allSchemes[index];
+            document.getElementById('modal-title').innerText = s.scheme_name;
+            document.getElementById('modal-state').innerText = s.state || 'Karnataka';
+            document.getElementById('modal-dept').innerText = s.department || 'Government of Karnataka';
+            document.getElementById('modal-desc').innerText = stripHTML(s.description);
+            document.getElementById('modal-age').innerText = s.age_min || s.age_max ? `${s.age_min || '0'} to ${s.age_max || '60+'} years` : 'No specific age limit';
+            document.getElementById('modal-income').innerText = s.income_max ? `₹${formatCurrency(s.income_max)} per annum` : 'No income cap specified';
+
+            // Benefits
+            const bList = document.getElementById('modal-benefits');
+            bList.innerHTML = (s.benefits && s.benefits.length) ? s.benefits.map(b => `<li class="mb-1">${b}</li>`).join('') : '<li class="text-muted">No specific benefits listed</li>';
+
+            // Eligibility
+            const eList = document.getElementById('modal-eligibility');
+            eList.innerHTML = (s.eligibility && s.eligibility.length) ? s.eligibility.map(e => `<li class="mb-1">${e}</li>`).join('') : '<li class="text-muted">Standard criteria applies</li>';
+
+            // Documents
+            const dList = document.getElementById('modal-docs');
+            dList.innerHTML = (s.documents_required && s.documents_required.length) ? s.documents_required.map(d => `<li class="mb-1">${d}</li>`).join('') : '<li class="text-muted">No documents specified</li>';
+
+            document.getElementById('modal-process').innerText = s.application_process || 'Apply online via official government portal.';
+            document.getElementById('modal-date').innerText = s.source_date || 'Recent';
+            
+            const urlBtn = document.getElementById('modal-url');
+            if (s.official_url) {
+                urlBtn.href = s.official_url;
+                urlBtn.style.display = 'inline-block';
+            } else {
+                urlBtn.style.display = 'none';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('schemeModal'));
+            modal.show();
+        }
+
+        function formatCurrency(val) {
+            if (!val) return '0';
+            if (val >= 100000) return (val / 100000).toFixed(1) + ' Lakh';
+            return val.toLocaleString('en-IN');
+        }
+
+        function stripHTML(html) {
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html || "";
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        // Initialize Page
+        loadSchemes();
+    </script>
+</body>
+</html>
