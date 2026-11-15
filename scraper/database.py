@@ -1,15 +1,35 @@
+import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Index, text
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-from scraper.config import SQLALCHEMY_DATABASE_URL
+from scraper.config import SQLALCHEMY_DATABASE_URL, MYSQL_DATABASE_URL, SQLITE_DATABASE_URL, MYSQL_HOST
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}
-)
+logger = logging.getLogger("ScraperDatabase")
 
+def get_db_engine():
+    """
+    Initializes SQLAlchemy Engine.
+    Tries MySQL first using environment variables.
+    If MySQL server is offline/unreachable, falls back cleanly to SQLite.
+    """
+    if MYSQL_HOST:
+        try:
+            engine = create_engine(MYSQL_DATABASE_URL, pool_pre_ping=True, pool_recycle=3600)
+            with engine.connect() as conn:
+                pass
+            logger.info("Connected successfully to MySQL for raw scraper database.")
+            return engine
+        except Exception:
+            pass
+    logger.info("Using local SQLite database for raw scraper data.")
+    return create_engine(
+        SQLITE_DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
+
+engine = get_db_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -18,17 +38,17 @@ class ScrapedPage(Base):
     __tablename__ = "scraped_pages"
 
     id = Column(Integer, primary_key=True, index=True)
-    url = Column(String, unique=True, index=True, nullable=False)
-    domain = Column(String, index=True)
-    title = Column(String)
+    url = Column(String(500), unique=True, index=True, nullable=False)
+    domain = Column(String(255), index=True)
+    title = Column(String(500))
     content_text = Column(Text)
     raw_html = Column(Text)
     meta_description = Column(Text)
-    content_hash = Column(String, index=True, nullable=True)
+    content_hash = Column(String(64), index=True, nullable=True)
     http_status = Column(Integer, default=200)
     pdf_count = Column(Integer, default=0)
     links_count = Column(Integer, default=0)
-    status = Column(String, default="SUCCESS")  # SUCCESS, ERROR
+    status = Column(String(50), default="SUCCESS")  # SUCCESS, ERROR
     error_message = Column(Text, nullable=True)
     scraped_at = Column(DateTime, default=datetime.utcnow)
 
@@ -40,13 +60,13 @@ class ScrapedPDF(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     page_id = Column(Integer, ForeignKey("scraped_pages.id"), nullable=True)
-    page_url = Column(String)
-    pdf_url = Column(String, unique=True, index=True, nullable=False)
-    file_name = Column(String, nullable=False)
-    file_path = Column(String, nullable=False)
+    page_url = Column(String(500))
+    pdf_url = Column(String(500), unique=True, index=True, nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_path = Column(String(500), nullable=False)
     file_size_bytes = Column(Integer, default=0)
     downloaded_at = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default="DOWNLOADED")  # DOWNLOADED, FAILED
+    status = Column(String(50), default="DOWNLOADED")  # DOWNLOADED, FAILED
     error_message = Column(Text, nullable=True)
 
     page = relationship("ScrapedPage", back_populates="pdfs")
@@ -60,7 +80,7 @@ class ScrapeRunLog(Base):
     ended_at = Column(DateTime, nullable=True)
     pages_scraped = Column(Integer, default=0)
     pdfs_downloaded = Column(Integer, default=0)
-    status = Column(String, default="RUNNING")  # RUNNING, COMPLETED, FAILED
+    status = Column(String(50), default="RUNNING")  # RUNNING, COMPLETED, FAILED
     log_summary = Column(Text, nullable=True)
 
 
