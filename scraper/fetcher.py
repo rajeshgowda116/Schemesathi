@@ -3,7 +3,7 @@ import ssl
 import requests
 import urllib3
 from typing import Tuple, Dict, Optional
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -14,12 +14,12 @@ DEFAULT_HEADERS = {
 }
 
 
-def fetch_resource(url: str, timeout: int = 15) -> Tuple[int, bytes, str, str]:
+def fetch_resource(url: str, timeout: int = 15, max_redirects: int = 5) -> Tuple[int, bytes, str, str]:
     """
-    Fetches a URL robustly, handling SSL/SNI issues common on govt servers.
+    Fetches a URL robustly, handling SSL/SNI issues and following HTTP redirects.
     Returns: (status_code, content_bytes, content_type, final_url)
     """
-    # 1. Try standard requests with SSL verify=False
+    # 1. Try standard requests with SSL verify=False and redirect following
     try:
         session = requests.Session()
         session.headers.update(DEFAULT_HEADERS)
@@ -92,11 +92,20 @@ def fetch_resource(url: str, timeout: int = 15) -> Tuple[int, bytes, str, str]:
                     status_code = 200
 
             content_type = ""
+            location_header = None
             for line in lines[1:]:
                 if ":" in line:
                     key, val = line.split(":", 1)
-                    if key.strip().lower() == "content-type":
+                    k_clean = key.strip().lower()
+                    if k_clean == "content-type":
                         content_type = val.strip()
+                    elif k_clean == "location":
+                        location_header = val.strip()
+
+            # Follow redirect if present in socket mode
+            if status_code in (301, 302, 303, 307, 308) and location_header and max_redirects > 0:
+                redirect_url = urljoin(url, location_header)
+                return fetch_resource(redirect_url, timeout=timeout, max_redirects=max_redirects - 1)
 
             return status_code, body, content_type, url
         else:

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">SchemeSathi - Dedicated Scheme AI Assistant</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#6d28d9',
+              light: '#f9f5ff',
+              dark: '#4c1d95',
+              sidebar: '#fbf9ff',
+              emerald: '#059669',
+              amber: '#d97706'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1180px;
+      height: 700px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e9d5ff;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d8b4fe;
+    }
+
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    .robot-eye {
+      animation: blink 4s infinite ease-in-out;
+      transform-origin: center;
+    }
+  </style>
+</head>
+
+<body class="p-2 sm:p-6">
+
+  <!-- Main App Container -->
+  <div class="app-container bg-white rounded-3xl overflow-hidden flex flex-col md:flex-row border border-purple-100 relative">
+
+    <!-- ================= LEFT SIDEBAR: CHAT HISTORY & SCHEME CONTEXT ================= -->
+    <div class="w-full md:w-80 bg-brand-sidebar border-r border-purple-100 flex flex-col shrink-0">
+      
+      <!-- Top Brand & Return Link -->
+      <div class="p-5 pb-3 border-b border-purple-100/60 flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-2 text-indigo-950 font-bold text-sm hover:text-brand-purple transition-colors">
+          <i class="fa-solid fa-arrow-left text-brand-purple text-xs"></i>
+          <span>Schemes Catalog</span>
+        </a>
+        <button onclick="startNewChat()" class="text-xs text-brand-purple hover:text-brand-dark font-bold flex items-center gap-1 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg transition-colors">
+          <i class="fa-solid fa-plus text-[10px]"></i> New
+        </button>
+      </div>
+
+      <!-- Focused Scheme Information Badge in Sidebar -->
+      <div class="p-4 bg-purple-50/70 border-b border-purple-100/80">
+        <div class="flex items-center justify-between text-[10px] font-bold text-brand-purple uppercase tracking-wider mb-1">
+          <span>Active Scheme Lock</span>
+          <span class="bg-purple-200/80 text-purple-900 px-1.5 py-0.5 rounded text-[9px]">Strict</span>
+        </div>
+        <div id="sidebar-scheme-name" class="font-extrabold text-sm text-gray-900 leading-snug">
+          Loading Scheme...
+        </div>
+        <div id="sidebar-scheme-dept" class="text-xs text-gray-500 mt-0.5 truncate">
+          Government of Karnataka
+        </div>
+      </div>
+
+      <!-- Recent Queries for this Scheme -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-2 text-xs" id="chat-history-list">
+        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Recent Questions</div>
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Citizen Profile Context Pill in Sidebar -->
+      <div class="p-4 border-t border-purple-100/80 bg-white/70">
+        <div class="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-1">Your Citizen Context</div>
+        <div id="sidebar-profile-summary" class="text-xs font-semibold text-gray-800 truncate">
+          Karnataka Resident • General Citizen
+        </div>
+        <div class="text-[10px] text-gray-400 mt-1">Profile applied to eligibility checks</div>
+      </div>
+
+    </div>
+
+    <!-- ================= RIGHT MAIN AREA: DEDICATED CHAT INTERFACE ================= -->
+    <div class="flex-1 flex flex-col bg-white relative overflow-hidden">
+
+      <!-- Top Header -->
+      <div class="p-6 pb-4 border-b border-gray-100 flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center shrink-0 border border-purple-200 shadow-xs">
+            <i class="fa-solid fa-robot text-2xl text-brand-purple"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 id="chat-header-title" class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
+                Ask <span id="header-scheme-name-span" class="text-brand-purple">Scheme</span> AI
+              </h1>
+              <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 uppercase tracking-wider">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Dedicated</span>
+              </span>
+            </div>
+            <p id="chat-header-subtitle" class="text-xs text-gray-500 mt-1">
+              Ask questions specifically about eligibility, benefits, required documents, and application steps for this scheme only.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Quick Actions: Back to Catalog & Official Link -->
+        <div class="flex items-center gap-2 shrink-0">
+          <a id="header-official-link" href="#" target="_blank" rel="noopener" class="hidden sm:flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            <span>Official Portal</span>
+          </a>
+          <a href="index.html" class="bg-brand-light hover:bg-purple-100 text-brand-purple px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1">
+            <i class="fa-solid fa-grid-2 text-xs"></i>
+            <span>All Schemes</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Scheme Highlights Bar -->
+      <div id="scheme-highlights-bar" class="bg-gradient-to-r from-purple-50 via-indigo-50/50 to-purple-50 border-b border-purple-100 px-6 py-2.5 flex flex-wrap items-center justify-between text-xs text-indigo-950 gap-2">
+        <div class="flex items-center gap-2">
+          <span class="bg-brand-purple text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <i class="fa-solid fa-lock text-[9px] mr-1"></i>Scheme-Locked
+          </span>
+          <span id="highlight-benefit-text" class="text-gray-700 font-medium truncate max-w-md">
+            Direct citizen welfare inquiry enabled.
+          </span>
+        </div>
+        <div id="highlight-meta-tags" class="flex items-center gap-1.5 text-[10px]">
+          <!-- Tags populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Chat Canvas / Messages Scroll Area -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4" id="chat-messages-container">
+
+        <!-- Robot Illustration & Welcome Mascot (From chatbot.html) -->
+        <div id="robot-mascot-box" class="flex flex-col items-center justify-center py-6 text-center">
+          
+          <!-- Robot Composition -->
+          <div class="relative w-52 h-52 flex items-center justify-center mb-2">
+            <!-- Light purple background circle -->
+            <div class="absolute inset-0 bg-purple-100/70 rounded-full scale-90 opacity-70"></div>
+
+            <!-- Decorative sparks -->
+            <i class="fa-solid fa-sparkles absolute top-6 right-6 text-purple-400 text-lg"></i>
+            <i class="fa-solid fa-star absolute bottom-10 left-6 text-amber-400 text-xs"></i>
+
+            <!-- Main Robot / Laptop composition -->
+            <div class="relative z-10 flex flex-col items-center mt-2">
+              <div class="w-20 h-20 bg-white rounded-3xl border-4 border-purple-200 flex items-center justify-center shadow-lg relative">
+                <!-- Antenna -->
+                <div class="absolute -top-5 left-1/2 -translate-x-1/2 w-1.5 h-5 bg-purple-400 rounded-t-full">
+                  <div class="w-3.5 h-3.5 rounded-full bg-brand-purple absolute -top-2.5 -left-[4px]"></div>
+                </div>
+                <!-- Face -->
+                <div class="w-14 h-10 bg-gray-900 rounded-xl flex items-center justify-center gap-2">
+                  <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full robot-eye"></div>
+                  <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full robot-eye"></div>
+                </div>
+              </div>
+
+              <!-- Laptop -->
+              <div class="w-28 h-16 bg-white border-2 border-gray-200 rounded-lg shadow-md -mt-3 relative z-20 flex items-center justify-center shadow-xl">
+                <div class="flex flex-col items-center">
+                  <div class="relative flex items-center justify-center w-7 h-7 mb-1">
+                    <i class="fa-solid fa-hands-holding-child text-brand-purple text-lg z-10"></i>
+                    <i class="fa-solid fa-leaf text-green-500 absolute -top-1 -right-1 text-[8px] z-20"></i>
+                  </div>
+                </div>
+                <!-- Laptop Base -->
+                <div class="absolute -bottom-1.5 w-32 h-1.5 bg-gray-300 rounded-b-xl left-1/2 -translate-x-1/2"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat prompt pill -->
+          <div id="mascot-prompt-pill" class="bg-brand-light text-brand-purple font-medium px-6 py-2.5 rounded-full border border-purple-100 shadow-xs text-xs mb-3">
+            Ask me anything specifically about <strong id="mascot-scheme-name">this government scheme...</strong>
+          </div>
+
+          <!-- Scheme-Specific Suggested Prompts -->
+          <div class="flex flex-wrap items-center justify-center gap-2 max-w-xl text-xs" id="quick-prompt-buttons">
+            <!-- Populated dynamically -->
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Input Box Bottom -->
+      <div class="p-6 pt-2 border-t border-gray-100 bg-white">
+        <form onsubmit="handleChatSubmit(event)" class="max-w-4xl mx-auto flex items-center bg-white border border-gray-300 rounded-full p-1.5 pl-5 shadow-sm focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-brand-purple transition-all">
+          <i class="fa-solid fa-wand-magic-sparkles text-brand-purple text-lg shrink-0"></i>
+          
+          <input 
+            type="text" 
+            id="chat-input"
+            placeholder="Ask about this scheme only..." 
+            class="flex-1 bg-transparent border-none outline-none px-4 text-gray-700 placeholder-gray-400 text-xs sm:text-sm font-medium"
+            autocomplete="off"
+          />
+
+          <button 
+            type="submit" 
+            id="chat-send-btn"
+            class="bg-brand-purple hover:bg-brand-dark text-white px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors shadow-md shrink-0">
+            <i class="fa-regular fa-paper-plane text-xs"></i> <span>Send</span>
+          </button>
+        </form>
+
+        <div class="text-center text-[10px] text-gray-400 mt-2">
+          🔒 Scheme-Locked Chatbot: Responses are grounded exclusively in official records for <span id="footer-scheme-name" class="font-semibold text-gray-600">this scheme</span>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-6 left-6 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl border border-slate-800 flex items-center gap-3 transition-opacity">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toast-msg">Notification message</span>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC & SCHEME-LOCK ENGINE ================= -->
+  <script>
+    // Embedded schemes dataset for offline & instant lookups
+    const ALL_SCHEMES = [{"scheme_id": 1, "id": 1, "scheme_name": "SSP Post-Matric Scholarship Scheme", "state": "Karnataka", "department": "Social Welfare Department", "description": "Financial assistance provided for SC/ST students pursuing higher education across Karnataka colleges.", "benefits": ["Full maintenance allowance paid monthly", "Compulsory non-refundable fee reimbursement", "Book bank facilities for professional courses"], "eligibility": ["Applicants must be between 18 and 30 years of age", "Must belong to SC or ST category in Karnataka", "Annual family income should not exceed Rs. 2.5 lakh", "Must have passed previous qualifying examination with minimum 50% marks"], "age_min": 18, "age_max": 30, "income_min": null, "income_max": 250000.0, "occupation": ["Student"], "category": ["SC", "ST"], "documents_required": ["Aadhaar Card", "Caste Certificate", "Income Certificate (showing family income below Rs 2.5 lakhs)", "SSLC Marks Card", "Bank Account Passbook linked with Aadhaar"], "application_process": "1. Visit official SSP Portal at https://ssp.karnataka.gov.in/\n2. Register using Aadhaar number and e-KYC\n3. Upload required documents and submit online application.", "official_url": "https://ssp.karnataka.gov.in/", "source_date": "2026-10-01", "last_updated": "", "created_at": "2026-10-04T03:32:27.990007", "updated_at": "2026-11-15T15:45:00.155292", "computed_category": "Education & Scholarships"}, {"scheme_id": 2, "id": 2, "scheme_name": "Gruha Lakshmi Scheme", "state": "Karnataka", "department": "Department of Women and Child Development", "description": "<div class='header'>Official Notice</div>Financial security scheme offering monthly financial support of ₹2,000 to the woman head of eligible families in Karnataka.", "benefits": ["Direct Benefit Transfer (DBT) of ₹2,000 per month into bank account", "Empowerment of female heads of households"], "eligibility": ["Woman head of the family named in BPL or APL ration cards", "Age of applicant must be minimum 18 years and below 60 years", "Neither applicant nor spouse should be an income tax payer", "Annual family income should not exceed ₹2 lakh"], "age_min": 18, "age_max": 60, "income_min": null, "income_max": 200000.0, "occupation": ["Woman / Widow"], "category": ["BPL", "General"], "documents_required": ["Aadhaar Card of female head", "Ration Card (BPL/APL)", "Bank Account details linked with Aadhaar", "Spouse Aadhaar Card"], "application_process": "Apply online at Seva Sindhu Portal (https://sevasindhugs1.karnataka.gov.in/gl-sp/) or visit nearest Grama One/Karnataka One centers.", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/", "source_date": "2026-10-02", "last_updated": "", "created_at": "2026-10-04T03:32:27.998216", "updated_at": "2026-11-15T15:45:00.162592", "computed_category": "Women & Child Welfare"}, {"scheme_id": 3, "id": 3, "scheme_name": "Yuva Nidhi Scheme", "state": "Karnataka", "department": "Department of Skill Development and Entrepreneurship", "description": "Unemployment assistance scheme for degree and diploma graduates in Karnataka.", "benefits": ["₹3,000 monthly allowance for unemployed graduates", "₹1,500 monthly allowance for unemployed diploma holders", "Skill training assistance for job seekers"], "eligibility": ["Applicants must be between 18 and 30 years of age", "Must have passed Degree/Diploma in academic year 2023-24 onwards", "Must be unemployed for at least 180 days after graduation"], "age_min": 18, "age_max": 30, "income_min": null, "income_max": null, "occupation": ["Unemployed Youth", "Student"], "category": ["General"], "documents_required": ["Degree/Diploma Marksheets", "Aadhaar Card", "Domicile Certificate of Karnataka", "Bank Passbook"], "application_process": "Register online on Seva Sindhu Portal with Aadhaar authentication.", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:32:28.002627", "updated_at": "2026-11-15T15:45:00.169671", "computed_category": "Youth & Employment"}, {"scheme_id": 4, "id": 4, "scheme_name": "Seva Sindhu 1", "state": "Karnataka", "department": "sevasindhugs1.karnataka.gov.in", "description": "﻿\nSeva Sindhu 1\nಸೇವಾ ಸಿಂಧು\nSeva Sindhu\nApply for Service\nGet OTP\nForgot Password\n|\nNew user ? Register here\n|\nKnow Your Eligibility\nCheck Your Application Status\nSelect Department\nRevenue Department\nFood And Civil Supplies Department\nSelect Service\nAgricultural Family member Certificate\nAgricultural Labour Certificate\nAddition of Name in RC\nCorrection of incorrect card category entries like APL. BPL & AAY\nRegister Yourself\nDo you want to proceed?\nProceed\nCancel", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Worker / Labourer"], "category": ["BPL"], "documents_required": [], "application_process": "", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:00.332582", "updated_at": "2026-11-15T15:44:59.149967", "computed_category": "Citizen Services & Portals"}, {"scheme_id": 9, "id": 9, "scheme_name": "Please click here to go to the Home Page", "state": "Karnataka", "department": "Department of e-Governance / Seva Sindhu", "description": "It seems like the page you are looking for does not exist.\nPlease\nclick here\nto go to the Home Page", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": [], "category": [], "documents_required": [], "application_process": "", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/resources/css_theme/panchayat_green.css", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:00.366751", "updated_at": "2026-11-16T13:22:58.556328", "computed_category": "Citizen Services & Portals"}, {"scheme_id": 13, "id": 13, "scheme_name": "ServicePlus | Know Your Eligibility", "state": "Karnataka", "department": "Department of e-Governance / Seva Sindhu", "description": "ServicePlus | Know Your Eligibility\nPanchayat Informatics Division\nNational Informatics Centre\nMinistry of Electronics & Information Technology, Government of\nIndia\nA Block, CGO Complex, Lodhi Road, New Delhi-110 003.\nserviceplus[at]googlegroups[dot]com\nhttps://serviceonline.gov.in\nThe Government will have complete discretion to share the details of\nyour use of the Web Site and/ or data entered by you with regulators\nor with any other third party, or in order to resolve disputes or\ncomplaints which relate to the Web Site.\nAll right are reserved @ 2018\nServicePlus, on behalf of Service Owner Department,provides only the\nfacility for transacting with Government Offices through the\nInternet. The service delivery is subject to the acts and rules\npromulgated by the respective Government from time to time.\nElectronic delivery of Government services are in compliance with\nthe IT act 2000. The special conditions and the terms of service\napplicable to Internet delivery are detailed in this document.\nThe following terms and conditions will apply if you wish to use the\nInternet for availing a service. Please go through the conditions\ncarefully and if you accept them, you may register yourself and\ntransact on the site. On using this site for service delivery, you\nare deemed to have agreed to the terms and conditions set forth\nbelow. If You do not agree with all these terms and conditions, you\nmust not transact on this Website.\nIf a user violates the terms and conditions Government (service\nowner) reserves the right to deactivate all such user registration\nand cancel any or all services requested without any notice. Garbage\n/ Junk values in profile may lead to Deactivation.\nOperationalization of this agreement is subject to existing laws and\nlegal processes of the respective Government, and nothing contained\nin this agreement is in derogation of Government's right to comply\nwith law enforcement requests or requirements relating to your use\nof this Web Site or information provided to or gathered by this site\nwith respect to such use. You agree that Government may provide\ndetails of your use of the Web Site to regulators or police or to\nany other third party, or in order to resolve disputes or complaints\nwhich relate to the Web Site, at Governmentâs complete discretion.\nThis agreement is made between: respective service owner department\nof the respective government who has configured the\nserviceGovernment (âUsâ) and The User (âYouâ), the individual, whose\ndetails are set out in the Portal User Creation page.\nPayment Option\nThe list of payment options available are internet banking /debit\ncard payment / credit card payment from banks that are listed when\nselecting each of the above options. Apart from the fee chargeable\nto Government against each service, bank / payment gateway\ntransaction charges will be applicable extra. In case of a failed\ntransaction the user shall have no right to claim the amount. The\nloss on this account shall not be borne either by Government or by\nthe Banks /Payment Gateways.\nUser Creation\nYou are responsible for maintaining the confidentiality of the\npassword and account, and are fully responsible for all activities\nthat occur under your password or account. Complaints Procedure\nYou can reach us on the contact details given in the âContactsâ link\ngiven in the login page.\nYour obligations\nGeneral Obligations:\nYou shall access ServicePlus web site only for lawful purposes and\nyou shall be responsible for complying with all applicable laws,\nstatutes and regulations in connection with the use of Government\nweb site. This Website is for your personal or commercial use by\napproved kiosks. You shall not modify, copy, distribute, transmit,\ndisplay, perform, reproduce, publish, license, create derivative\nworks from, transfer or sell any information, or services obtained\nfrom this Website. You shall not create a hypertext link to the\nWebsite or \"frame\" the Website, except with the express advance\nwritten permission of the Government.\nInformation Provided\nThe information you provide in the Registration page must be\ncomplete and accurate. Government 00. reserves the right at all\ntimes to disclose any information as deems necessary to satisfy any\napplicable law, regulation, legal process.\nTermination\nWe may at any time at our sole discretion and without giving any\nreason or any prior notice terminate or temporarily suspend your\naccess to all or any part of the web site.\nSubmitted applications will be processed only after successful\ntransaction has been done with the payment gateway. In case of a\nfailed transaction the user shall have no right to claim the amount\nHowever, cancellation/refund policy for a service will be governed\nsolely on the basis of applicable rules and regulations of the\nservice as defined by department/agency owning the service.", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": [], "category": ["ST"], "documents_required": [], "application_process": "", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/knowYourEligibility.html", "source_date": "2026-11-16", "last_updated": "", "created_at": "2026-10-04T03:39:00.441299", "updated_at": "2026-11-16T13:22:58.481066", "computed_category": "Food & Civil Supplies"}, {"scheme_id": 24, "id": 24, "scheme_name": "State Scholarship Portal – Government of Karnataka(ಕರ್ನಾಟಕ ಸರ್ಕಾರ)", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "State Scholarship Portal – Government of Karnataka(ಕರ್ನಾಟಕ ಸರ್ಕಾರ)", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/homepage", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:00.987225", "updated_at": "2026-11-15T15:45:00.370254", "computed_category": "Education & Scholarships"}, {"scheme_id": 26, "id": 26, "scheme_name": "Screen Reader | State Scholarship Portal - Government of Karnataka", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "Screen Reader | State Scholarship Portal - Government of Karnataka", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/screenreader", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:01.025622", "updated_at": "2026-11-15T15:45:00.332515", "computed_category": "Education & Scholarships"}, {"scheme_id": 29, "id": 29, "scheme_name": "RTI | State Scholarship Portal - Government of Karnataka", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "RTI | State Scholarship Portal - Government of Karnataka", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/RTI", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:01.157358", "updated_at": "2026-11-15T15:45:00.389563", "computed_category": "Education & Scholarships"}, {"scheme_id": 31, "id": 31, "scheme_name": "Downloads | State Scholarship Portal - Government of Karnataka", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "Downloads | State Scholarship Portal - Government of Karnataka", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/Downloads/", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:01.221507", "updated_at": "2026-11-15T15:45:00.435958", "computed_category": "Education & Scholarships"}, {"scheme_id": 49, "id": 49, "scheme_name": "Gruha Jyoti Scheme", "state": "Karnataka", "department": "Energy Department, Government of Karnataka", "description": "Free electricity scheme providing up to 200 units of free power per month to all residential households in Karnataka.", "benefits": ["Zero electricity bill for monthly usage up to 200 units", "Coverage for all domestic electricity consumers and tenants"], "eligibility": ["All domestic residential electricity connections in Karnataka", "Monthly average electricity consumption should be within 200 units", "One connection per household/Aadhaar number"], "age_min": null, "age_max": 20, "income_min": null, "income_max": null, "occupation": ["All Households"], "category": ["General", "BPL"], "documents_required": ["Aadhaar Card", "Electricity Account ID (Account ID on Bill)", "Rental Agreement or Voter ID (for tenants)"], "application_process": "Apply online via Seva Sindhu Portal under Gruha Jyoti tab.", "official_url": "https://sevasindhugs1.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.439229", "updated_at": "2026-11-15T15:45:00.103321", "computed_category": "Energy & Utilities"}, {"scheme_id": 50, "id": 50, "scheme_name": "Anna Bhagya Scheme", "state": "Karnataka", "department": "Department of Food, Civil Supplies and Consumer Affairs", "description": "Food security scheme providing 10 kg of free rice per person per month to BPL and Antyodaya cardholders.", "benefits": ["10 kg free foodgrains or cash equivalent (DBT) per person per month", "Eradication of hunger and malnutrition in poor households"], "eligibility": ["Families holding BPL (Below Poverty Line) or AAY (Antyodaya Anna Yojana) ration cards in Karnataka", "Family annual income below ₹1.2 lakh"], "age_min": null, "age_max": null, "income_min": null, "income_max": 120000.0, "occupation": ["Worker / Labourer", "Farmer / Agriculture"], "category": ["BPL", "SC", "ST"], "documents_required": ["BPL / AAY Ration Card", "Aadhaar Card of all family members", "Active Bank Account linked with Aadhaar"], "application_process": "Automatic entitlement for valid BPL ration card holders at fair price shops.", "official_url": "https://ahara.kar.nic.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.447592", "updated_at": "2026-11-15T15:45:00.115348", "computed_category": "Food & Civil Supplies"}, {"scheme_id": 51, "id": 51, "scheme_name": "Shakti Scheme (Uchita Prayana)", "state": "Karnataka", "department": "Transport Department, Government of Karnataka", "description": "Free bus travel scheme for women residents of Karnataka across state-run KSRTC, BMTC, NWKRTC, and KKRTC non-AC buses.", "benefits": ["100% free bus travel within Karnataka state borders", "Applicable on ordinary and express bus services"], "eligibility": ["All women, girls, and transgender persons residing in Karnataka", "No age or income limit"], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Woman / Widow", "Student"], "category": ["General"], "documents_required": ["Shakti Smart Card or Govt Photo ID Card (Aadhaar, Voter ID, Driving License) proving Karnataka address"], "application_process": "Apply for Shakti Smart Card on Seva Sindhu portal or present govt photo ID during bus travel.", "official_url": "https://sevasindhugs1.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.452386", "updated_at": "2026-11-15T15:45:00.120960", "computed_category": "Women & Child Welfare"}, {"scheme_id": 52, "id": 52, "scheme_name": "Ganga Kalyana Scheme", "state": "Karnataka", "department": "Karnataka Minorities / Backward Classes Development Corporation", "description": "Irrigation scheme providing free borewell drilling and pump set installation for small and marginal farmers.", "benefits": ["100% subsidy for borewell drilling and pump installation", "Electrification of borewells up to ₹3.5 lakh value"], "eligibility": ["Small and marginal farmers belonging to SC, ST, OBC, or Minority communities", "Must own between 2 to 5 acres of agricultural land", "Annual family income should not exceed ₹1.5 lakh"], "age_min": 2, "age_max": 5, "income_min": null, "income_max": 150000.0, "occupation": ["Farmer / Agriculture"], "category": ["SC", "ST", "OBC", "Minority", "BPL"], "documents_required": ["RTC / Land Revenue Documents (Pahani)", "Caste and Income Certificate", "Small Farmer Certificate from Tahsildar", "Aadhaar Card", "Bank Passbook"], "application_process": "Apply online via Seva Sindhu or KMDC portal (https://kmdc.karnataka.gov.in/)", "official_url": "https://kmdc.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.461650", "updated_at": "2026-11-15T15:45:00.130565", "computed_category": "Agriculture & Farmers"}, {"scheme_id": 53, "id": 53, "scheme_name": "Karnataka Farmer Vidya Nidhi Scheme", "state": "Karnataka", "department": "Department of Agriculture, Government of Karnataka", "description": "Educational scholarship scheme for children of farmers in Karnataka to pursue higher education.", "benefits": ["Annual scholarship ranging from ₹2,500 to ₹11,000 depending on course level", "Direct Benefit Transfer to student's bank account"], "eligibility": ["Children of registered farmers owning agricultural land in Karnataka", "Enrolled in Class 11, 12, ITI, BA, BSc, BCom, MBBS, BE, or Post-Graduation", "Age of student between 16 and 25 years"], "age_min": 16, "age_max": 25, "income_min": null, "income_max": null, "occupation": ["Farmer / Agriculture", "Student"], "category": ["General", "OBC", "SC", "ST"], "documents_required": ["Farmer FID (FRUITS ID) of parent", "Student Aadhaar Card", "College Admission & Fee receipt"], "application_process": "Automatic scholarship disbursement via SSP portal using FRUITS ID integration.", "official_url": "https://ssp.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.466636", "updated_at": "2026-11-15T15:45:00.136290", "computed_category": "Education & Scholarships"}, {"scheme_id": 54, "id": 54, "scheme_name": "Chief Minister’s Employment Generation Programme (CMEGP)", "state": "Karnataka", "department": "Commerce & Industries Department / KVIC", "description": "Self-employment credit-linked subsidy scheme for setting up micro-enterprises in manufacturing and service sectors.", "benefits": ["Capital subsidy up to 35% for SC/ST/Women/Minority entrepreneurs (max ₹10 lakh subsidy)", "Bank loan assistance up to ₹25 lakh project cost"], "eligibility": ["Applicants must be between 18 and 45 years of age (50 years for SC/ST/Women/Ex-servicemen)", "Minimum 8th standard pass for project cost above ₹10 lakh", "One person per family eligible"], "age_min": 18, "age_max": 45, "income_min": null, "income_max": null, "occupation": ["Entrepreneur / MSME", "Unemployed Youth"], "category": ["General", "SC", "ST", "OBC", "Minority"], "documents_required": ["Detailed Project Report (DPR)", "Aadhaar Card", "Educational Qualification Certificate", "Caste/Category Certificate"], "application_process": "Apply online on CMEGP portal (https://cmegp.kar.nic.in/).", "official_url": "https://cmegp.kar.nic.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.471443", "updated_at": "2026-11-15T15:45:00.142444", "computed_category": "Youth & Employment"}, {"scheme_id": 55, "id": 55, "scheme_name": "Arivu Education Loan Scheme", "state": "Karnataka", "department": "Karnataka Minorities Development Corporation (KMDC)", "description": "Subsidized education loan scheme for minority community students pursuing professional courses.", "benefits": ["Education loan up to ₹3,000,000 at low interest rate of 2% per annum", "Covers Engineering, MBBS, BDS, MBA, MCA, and AYUSH courses"], "eligibility": ["Students belonging to Muslim, Christian, Jain, Buddhist, Sikh, or Parsi communities", "Must be resident of Karnataka", "Annual family income should not exceed ₹8.0 lakh", "Age of student between 17 and 30 years"], "age_min": 17, "age_max": 30, "income_min": null, "income_max": 800000.0, "occupation": ["Student"], "category": ["Minority"], "documents_required": ["CET / NEET Admission Order", "Aadhaar Card", "Income & Minority Certificate", "SSLC & PUC Marksheets"], "application_process": "Apply online via KMDC portal (https://kmdc.karnataka.gov.in/).", "official_url": "https://kmdc.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.476052", "updated_at": "2026-11-15T15:45:00.146967", "computed_category": "Education & Scholarships"}];
+
+    // Current State
+    let currentScheme = null;
+    let userProfile = { age: null, gender: 'Any', occupation: 'Any', category: 'Any', income: 9999999, state: 'Karnataka' };
+    let schemeChatHistory = [];
+
+    // On Load: Extract query parameter and set scheme
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSavedProfile();
+      initializeSchemeFromUrl();
+    });
+
+    function loadSavedProfile() {
+      try {
+        const saved = localStorage.getItem('schemesathi_user_profile');
+        if (saved) {
+          userProfile = JSON.parse(saved);
+          const parts = [];
+          if (userProfile.occupation && userProfile.occupation !== 'Any') parts.push(userProfile.occupation);
+          if (userProfile.category && userProfile.category !== 'Any') parts.push(userProfile.category);
+          if (userProfile.age) parts.push(`Age: ${userProfile.age}`);
+          if (userProfile.income < 9000000) parts.push(`Income < ₹${(userProfile.income / 100000).toFixed(1)}L`);
+          if (parts.length > 0) {
+            document.getElementById('sidebar-profile-summary').textContent = parts.join(' • ');
+          }
+        }
+      } catch (e) {}
+    }
+
+    function initializeSchemeFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const schemeParam = params.get('scheme');
+      const idParam = params.get('id');
+
+      // Match scheme by ID first
+      if (idParam) {
+        currentScheme = ALL_SCHEMES.find(s => String(s.id) === String(idParam) || String(s.scheme_id) === String(idParam));
+      }
+      
+      // Match scheme by name or keywords
+      if (!currentScheme && schemeParam) {
+        const norm = schemeParam.toLowerCase().trim();
+        currentScheme = ALL_SCHEMES.find(s => s.scheme_name.toLowerCase().includes(norm) || norm.includes(s.scheme_name.toLowerCase()));
+        if (!currentScheme) {
+          const words = norm.split(/\s+/).filter(w => w.length > 2 && w !== 'scheme');
+          currentScheme = ALL_SCHEMES.find(s => words.some(w => s.scheme_name.toLowerCase().includes(w)));
+        }
+        // If not in preloaded catalog, synthesize dedicated custom scheme object
+        if (!currentScheme) {
+          const capitalizedName = schemeParam.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          currentScheme = {
+            id: null,
+            scheme_id: null,
+            scheme_name: capitalizedName.includes('Scheme') ? capitalizedName : capitalizedName + ' Scheme',
+            department: 'Government of Karnataka',
+            description: `Official citizen welfare program: ${capitalizedName}.`,
+            benefits: ['Direct citizen assistance as notified by the Government of Karnataka.'],
+            eligibility: ['Karnataka state resident citizens as per scheme guidelines.'],
+            documents_required: ['Aadhaar Card', 'Residential Proof', 'Income/Caste Certificate (if applicable)'],
+            official_url: 'https://sevasindhugs1.karnataka.gov.in/'
+          };
+        }
+      }
+
+      // Fallback: Default to Gruha Lakshmi Scheme if no param specified
+      if (!currentScheme) {
+        currentScheme = ALL_SCHEMES.find(s => s.scheme_name.includes('Gruha Lakshmi')) || ALL_SCHEMES[0];
+      }
+
+      setupSchemeChatUI();
+      loadSchemeHistory();
+    }
+
+    function setupSchemeChatUI() {
+      if (!currentScheme) return;
+
+      const sName = currentScheme.scheme_name;
+      const sDept = currentScheme.department || 'Government of Karnataka';
+
+      // Update titles
+      document.title = `SchemeSathi - ${sName} AI Chat`;
+      document.getElementById('page-title').textContent = `SchemeSathi - ${sName} AI Chat`;
+      document.getElementById('header-scheme-name-span').textContent = sName;
+      document.getElementById('sidebar-scheme-name').textContent = sName;
+      document.getElementById('sidebar-scheme-dept').textContent = sDept;
+      document.getElementById('mascot-scheme-name').textContent = sName;
+      document.getElementById('footer-scheme-name').textContent = sName;
+
+      // Update input placeholder
+      document.getElementById('chat-input').placeholder = `Ask about ${sName} only...`;
+
+      // Official portal link
+      const officialLink = document.getElementById('header-official-link');
+      if (currentScheme.official_url) {
+        officialLink.href = currentScheme.official_url;
+        officialLink.classList.remove('hidden');
+      } else {
+        officialLink.classList.add('hidden');
+      }
+
+      // Highlights bar
+      const highlightText = document.getElementById('highlight-benefit-text');
+      if (currentScheme.benefits && currentScheme.benefits.length > 0) {
+        highlightText.textContent = `Key Benefit: ${currentScheme.benefits[0]}`;
+      } else if (currentScheme.description) {
+        highlightText.textContent = currentScheme.description.replace(/<[^>]*>?/gm, '').slice(0, 90) + '...';
+      }
+
+      const tagsContainer = document.getElementById('highlight-meta-tags');
+      const tags = [];
+      if (currentScheme.age_min || currentScheme.age_max) tags.push(`Age: ${currentScheme.age_min || 'Any'}-${currentScheme.age_max || 'Any'}`);
+      if (currentScheme.income_max) tags.push(`Income < ₹${(currentScheme.income_max / 100000).toFixed(1)}L`);
+      if (currentScheme.category && currentScheme.category.length > 0) tags.push(currentScheme.category[0]);
+      tagsContainer.innerHTML = tags.map(t => `<span class="bg-white/80 border border-purple-200 px-2 py-0.5 rounded font-medium">${t}</span>`).join('');
+
+      // Setup 4 tailored prompt buttons
+      const promptsContainer = document.getElementById('quick-prompt-buttons');
+      promptsContainer.innerHTML = `
+        <button onclick="askPrompt('Am I eligible for ${sName}?')" class="bg-gray-50 hover:bg-purple-50 text-gray-700 hover:text-brand-purple border border-gray-200 px-3 py-1.5 rounded-full transition-colors">
+          🎯 Am I eligible for this scheme?
+        </button>
+        <button onclick="askPrompt('What are all the benefits of ${sName}?')" class="bg-gray-50 hover:bg-purple-50 text-gray-700 hover:text-brand-purple border border-gray-200 px-3 py-1.5 rounded-full transition-colors">
+          🎁 What are the exact benefits?
+        </button>
+        <button onclick="askPrompt('What documents are required to apply for ${sName}?')" class="bg-gray-50 hover:bg-purple-50 text-gray-700 hover:text-brand-purple border border-gray-200 px-3 py-1.5 rounded-full transition-colors">
+          📑 What documents are required?
+        </button>
+        <button onclick="askPrompt('How to apply online for ${sName}?')" class="bg-gray-50 hover:bg-purple-50 text-gray-700 hover:text-brand-purple border border-gray-200 px-3 py-1.5 rounded-full transition-colors">
+          🚀 Step-by-step application process
+        </button>
+      `;
+    }
+
+    // Check if the query is attempting to ask about a DIFFERENT scheme
+    function isAskingAboutDifferentScheme(query) {
+      const q = query.toLowerCase();
+      const currentNameNorm = currentScheme.scheme_name.toLowerCase();
+
+      // Check against all other schemes in our catalog
+      for (const other of ALL_SCHEMES) {
+        if (other.id && currentScheme.id && other.id === currentScheme.id) continue;
+        if (other.scheme_name.toLowerCase() === currentNameNorm) continue;
+
+        const otherName = other.scheme_name.toLowerCase();
+        // Check for distinctive keywords of other schemes
+        const distinctiveKeywords = [];
+        if (otherName.includes('scholarship') || otherName.includes('post-matric')) distinctiveKeywords.push('post-matric', 'ssp scholarship', 'post matric', 'pre-matric');
+        if (otherName.includes('yuva nidhi')) distinctiveKeywords.push('yuva nidhi', 'yuvanidhi', 'unemployment allowance', 'unemployed graduate');
+        if (otherName.includes('gruha lakshmi')) distinctiveKeywords.push('gruha lakshmi', 'gruhalakshmi', 'lakshmi scheme', '2000 rupees', '2000 dbt', 'woman head dbt');
+        if (otherName.includes('gruha jyoti')) distinctiveKeywords.push('gruha jyoti', 'gruhajyoti', 'free electricity', '200 units', 'power bill', 'free power');
+        if (otherName.includes('shakti')) distinctiveKeywords.push('shakti scheme', 'shakti', 'free bus travel', 'free bus', 'uchita prayana', 'ksrtc free');
+        if (otherName.includes('anna bhagya')) distinctiveKeywords.push('anna bhagya', 'annabhagya', 'free rice', '10 kg rice', 'dbt rice');
+        if (otherName.includes('vidya nidhi')) distinctiveKeywords.push('farmer vidya nidhi', 'raitha vidya', 'vidya nidhi');
+        if (otherName.includes('ganga kalyana')) distinctiveKeywords.push('ganga kalyana', 'gangakalyana', 'borewell', 'irrigation pump');
+        if (otherName.includes('cmegp')) distinctiveKeywords.push('cmegp', 'chief minister employment', 'micro enterprise');
+        if (otherName.includes('arivu')) distinctiveKeywords.push('arivu loan', 'arivu education loan', 'arivu');
+
+        for (const kw of distinctiveKeywords) {
+          if (q.includes(kw) && !currentNameNorm.includes(kw)) {
+            return other.scheme_name;
+          }
+        }
+      }
+
+      // Generic other scheme queries
+      const genericOtherPatterns = [
+        'other scheme', 'other schemes', 'all schemes', 'different scheme', 'different schemes', 
+        'what other programs', 'list of schemes', 'another scheme', 'tell me about other', 'any other'
+      ];
+      if (genericOtherPatterns.some(pattern => q.includes(pattern))) {
+        return 'Other Karnataka Schemes';
+      }
+
+      return null;
+    }
+
+    // Sending RAG Chat Queries
+    async function sendChatQuery(query) {
+      if (!query || query.trim() === '') return;
+
+      const container = document.getElementById('chat-messages-container');
+      const sendBtn = document.getElementById('chat-send-btn');
+      const input = document.getElementById('chat-input');
+
+      // Hide mascot illustration once chatting begins
+      const mascotBox = document.getElementById('robot-mascot-box');
+      if (mascotBox) mascotBox.classList.add('hidden');
+
+      // Append User Bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'flex justify-end';
+      userBubble.innerHTML = `
+        <div class="bg-brand-purple text-white rounded-2xl rounded-tr-none p-3.5 max-w-xl text-xs sm:text-sm leading-relaxed shadow-sm">
+          ${query.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+        </div>
+      `;
+      container.appendChild(userBubble);
+      container.scrollTop = container.scrollHeight;
+
+      if (input) input.value = '';
+      if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      }
+
+      saveToSchemeHistory(query);
+
+      // ================= STRICT SCHEME-LOCK GUARDRAIL =================
+      const detectedOtherScheme = isAskingAboutDifferentScheme(query);
+      if (detectedOtherScheme) {
+        setTimeout(() => {
+          const guardrailBubble = document.createElement('div');
+          guardrailBubble.className = 'flex gap-2.5 items-start';
+          guardrailBubble.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 text-xs font-bold border border-amber-200">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-none p-4 max-w-xl text-xs sm:text-sm text-amber-950 leading-relaxed shadow-xs">
+              <p class="font-bold text-amber-900 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span>Scheme-Locked Chat Session</span>
+              </p>
+              <p>This conversation is strictly dedicated to <strong>${currentScheme.scheme_name}</strong>. Inquiries regarding <em>${detectedOtherScheme}</em> or other schemes cannot be answered in this room.</p>
+              <div class="mt-3 pt-2.5 border-t border-amber-200/60 flex items-center gap-3">
+                <a href="index.html#schemes" class="bg-brand-purple hover:bg-brand-dark text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1">
+                  <span>Browse Schemes in Catalog</span>
+                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+              </div>
+            </div>
+          `;
+          container.appendChild(guardrailBubble);
+          container.scrollTop = container.scrollHeight;
+
+          if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fa-regular fa-paper-plane text-xs"></i> <span>Send</span>';
+          }
+        }, 400);
+        return;
+      }
+
+      // Thinking Indicator
+      const loadingBubble = document.createElement('div');
+      loadingBubble.className = 'flex gap-2.5 items-start';
+      loadingBubble.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-purple-100 text-brand-purple flex items-center justify-center shrink-0 text-xs font-bold">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="bg-gray-50 border border-gray-100 rounded-2xl rounded-tl-none p-3.5 text-xs text-gray-500 flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-500 animate-spin"></i>
+          <span>Retrieving official ${currentScheme.scheme_name} records & synthesizing answer...</span>
+        </div>
+      `;
+      container.appendChild(loadingBubble);
+      container.scrollTop = container.scrollHeight;
+
+      try {
+        const payload = {
+          query: `[Regarding ${currentScheme.scheme_name} ONLY]: ${query}`,
+          profile: {
+            age: userProfile.age,
+            category: userProfile.category !== 'Any' ? userProfile.category : null,
+            income: userProfile.income < 9000000 ? userProfile.income : null,
+            occupation: userProfile.occupation !== 'Any' ? userProfile.occupation : null,
+            state: userProfile.state
+          },
+          filters: {
+            scheme_id: currentScheme.id
+          }
+        };
+
+        const res = await fetch('/api/rag/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        container.removeChild(loadingBubble);
+
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        // Format Answer
+        const botBubble = document.createElement('div');
+        botBubble.className = 'flex gap-2.5 items-start';
+
+        let formattedAnswer = (data.answer || 'No answer available.')
+          .replace(/### (.*?)\n/g, '<h4 class="font-bold text-gray-900 text-sm mt-2 mb-1">$1</h4>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/^- (.*?)$/gm, '<li class="ml-4 list-disc">$1</li>')
+          .replace(/\n\n/g, '<br><br>')
+          .replace(/\n/g, '<br>');
+
+        // Sources pills
+        let sourcesHtml = '';
+        if (data.sources && data.sources.length > 0) {
+          sourcesHtml = `
+            <div class="mt-3 pt-2 border-t border-gray-100 text-[11px] text-gray-500">
+              <strong class="text-gray-600 block mb-1">Official Sources:</strong>
+              <div class="flex flex-wrap gap-1.5">
+                ${data.sources.map(s => `
+                  <a href="${s.official_url}" target="_blank" rel="noopener" class="bg-white border border-gray-200 hover:border-brand-purple text-brand-purple px-2 py-0.5 rounded text-[10px] flex items-center gap-1 font-medium transition-colors">
+                    <i class="fa-solid fa-link text-[8px]"></i>
+                    <span>${s.scheme_name}</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        botBubble.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-purple-100 text-brand-purple flex items-center justify-center shrink-0 text-xs font-bold border border-purple-200">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div class="bg-gray-50 border border-gray-100 rounded-2xl rounded-tl-none p-4 max-w-xl text-xs sm:text-sm text-gray-800 leading-relaxed shadow-xs">
+            <div>${formattedAnswer}</div>
+            ${sourcesHtml}
+          </div>
+        `;
+        container.appendChild(botBubble);
+
+      } catch (err) {
+        console.error('Chat error:', err);
+        container.removeChild(loadingBubble);
+
+        // Fallback generation using local scheme metadata
+        const fallbackBubble = document.createElement('div');
+        fallbackBubble.className = 'flex gap-2.5 items-start';
+        
+        const bList = (currentScheme.benefits || []).map(b => `<li class="ml-4 list-disc">${b}</li>`).join('');
+        const eList = (currentScheme.eligibility || []).map(e => `<li class="ml-4 list-disc">${e}</li>`).join('');
+        const dList = (currentScheme.documents_required || []).map(d => `<li class="ml-4 list-disc">${d}</li>`).join('');
+
+        fallbackBubble.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-purple-100 text-brand-purple flex items-center justify-center shrink-0 text-xs font-bold border border-purple-200">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div class="bg-gray-50 border border-gray-100 rounded-2xl rounded-tl-none p-4 max-w-xl text-xs sm:text-sm text-gray-800 leading-relaxed shadow-xs">
+            <h4 class="font-bold text-gray-900 text-sm mb-1">${currentScheme.scheme_name} (Official Information)</h4>
+            <p class="mb-2 text-gray-600">${currentScheme.description || 'Structured citizen welfare scheme.'}</p>
+            
+            ${bList ? '<strong class="block text-gray-700 mt-2">Benefits:</strong><ul>' + bList + '</ul>' : ''}
+            ${eList ? '<strong class="block text-gray-700 mt-2">Eligibility:</strong><ul>' + eList + '</ul>' : ''}
+            ${dList ? '<strong class="block text-gray-700 mt-2">Required Documents:</strong><ul>' + dList + '</ul>' : ''}
+
+            <div class="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
+              <span class="text-gray-500">Department: ${currentScheme.department}</span>
+              ${currentScheme.official_url ? `<a href="${currentScheme.official_url}" target="_blank" rel="noopener" class="text-brand-purple font-bold hover:underline">Official Portal &rarr;</a>` : ''}
+            </div>
+          </div>
+        `;
+        container.appendChild(fallbackBubble);
+
+      } finally {
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<i class="fa-regular fa-paper-plane text-xs"></i> <span>Send</span>';
+        }
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function handleChatSubmit(e) {
+      e.preventDefault();
+      const q = document.getElementById('chat-input').value;
+      sendChatQuery(q);
+    }
+
+    function askPrompt(promptText) {
+      document.getElementById('chat-input').value = promptText;
+      sendChatQuery(promptText);
+    }
+
+    function startNewChat() {
+      const container = document.getElementById('chat-messages-container');
+      const mascotBox = document.getElementById('robot-mascot-box');
+      container.innerHTML = '';
+      if (mascotBox) {
+        mascotBox.classList.remove('hidden');
+        container.appendChild(mascotBox);
+      }
+      showToast('Started new conversation for this scheme.', 'info');
+    }
+
+    function loadSchemeHistory() {
+      if (!currentScheme) return;
+      try {
+        const key = `schemesathi_history_${currentScheme.id}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          schemeChatHistory = JSON.parse(saved);
+        } else {
+          schemeChatHistory = [
+            `Am I eligible for ${currentScheme.scheme_name}?`,
+            `What are the benefits?`
+          ];
+        }
+        renderHistoryList();
+      } catch (e) {}
+    }
+
+    function saveToSchemeHistory(q) {
+      if (!currentScheme || !q || q.trim() === '') return;
+      schemeChatHistory = schemeChatHistory.filter(item => item.toLowerCase() !== q.toLowerCase());
+      schemeChatHistory.unshift(q);
+      if (schemeChatHistory.length > 8) schemeChatHistory = schemeChatHistory.slice(0, 8);
+      try {
+        localStorage.setItem(`schemesathi_history_${currentScheme.id}`, JSON.stringify(schemeChatHistory));
+        renderHistoryList();
+      } catch (e) {}
+    }
+
+    function renderHistoryList() {
+      const listContainer = document.getElementById('chat-history-list');
+      if (!listContainer) return;
+
+      listContainer.innerHTML = '<div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Recent Questions</div>' +
+        schemeChatHistory.map(q => `
+          <div onclick="askPrompt('${q.replace(/'/g, "\\\'")}')" class="group cursor-pointer p-2.5 hover:bg-purple-100/40 rounded-xl transition-colors bg-white border border-gray-100 shadow-xs">
+            <div class="flex items-start gap-2">
+              <i class="fa-regular fa-comment-dots text-purple-600 mt-0.5 text-xs"></i>
+              <div class="truncate">
+                <p class="font-semibold text-gray-800 leading-tight group-hover:text-brand-purple truncate">${q}</p>
+                <p class="text-[10px] text-gray-400 mt-0.5 truncate">${currentScheme.scheme_name}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msgElem = document.getElementById('toast-msg');
+      const icon = document.getElementById('toast-icon');
+
+      msgElem.textContent = msg;
+      if (type === 'success') {
+        icon.className = 'fa-solid fa-circle-check text-emerald-400';
+      } else if (type === 'error') {
+        icon.className = 'fa-solid fa-triangle-exclamation text-rose-400';
+      } else {
+        icon.className = 'fa-solid fa-info-circle text-amber-400';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+</body>
+
+</html>

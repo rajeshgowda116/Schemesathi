@@ -143,3 +143,31 @@ def insert_or_update_scheme(db_session, scheme_dict: Dict[str, Any]) -> Tuple[Sc
     db_session.commit()
     db_session.refresh(new_scheme)
     return new_scheme, True
+
+
+def get_all_schemes(db_session) -> List[Dict[str, Any]]:
+    """Returns all cleaned schemes from the database formatted as dictionaries."""
+    records = db_session.query(SchemeModel).order_by(SchemeModel.id.asc()).all()
+    results = []
+    for r in records:
+        results.append({
+            "scheme_name": r.scheme_name,
+            "state": r.state or "Karnataka",
+            "department": r.department or "Government of Karnataka",
+            "description": r.description or "",
+            "benefits": r.benefits or [],
+            "eligibility": r.eligibility or [],
+            "age_min": r.age_min,
+            "age_max": r.age_max,
+            "income_min": r.income_min,
+            "income_max": r.income_max,
+            "occupation": r.occupation or [],
+            "category": r.category or [],
+            "documents_required": r.documents_required or [],
+            "application_process": r.application_process or "",
+            "official_url": r.official_url or "",
+            "source_date": r.source_date or "",
+            "last_updated": r.last_updated or ""
+        })
+    return results
+

@@ -26,9 +26,38 @@ TARGET_URLS = [
 ]
 
 # Scraping settings
-DEFAULT_TIMEOUT = 15
-MAX_DEPTH = 2  # Follow internal links up to depth 2
-MAX_PAGES_PER_DOMAIN = 30  # Safety cap per domain to avoid infinite loops
+DEFAULT_TIMEOUT = int(os.getenv("SCRAPER_TIMEOUT", 20))
+MAX_DEPTH = int(os.getenv("SCRAPER_MAX_DEPTH", 5))  # Deep traversal: Home -> Scheme -> Application Form -> Redirects
+MAX_PAGES_PER_DOMAIN = int(os.getenv("SCRAPER_MAX_PAGES", 500))  # Ample cap per domain to ensure all schemes/forms are captured
+
+# Allowed trusted portal domains for following scheme application links and redirects
+ALLOWED_PORTAL_DOMAINS = [
+    "gov.in",
+    "nic.in",
+    "karnataka.gov.in",
+    "serviceonline.gov.in",
+    "scholarships.gov.in",
+    "sakala.kar.nic.in"
+]
+
+# Keywords indicating schemes and services
+SCHEME_KEYWORDS = [
+    "scheme", "yojana", "service", "welfare", "benefit", "scholarship",
+    "eligib", "dept", "department", "initiative", "mission", "seve", "yojane"
+]
+
+# Keywords indicating application forms and apply actions
+APPLICATION_KEYWORDS = [
+    "apply", "application", "form", "register", "registration", "login",
+    "applyonline", "online-application", "new-account", "ca", "ssppre",
+    "post_sa", "entry", "submission", "userlogin", "citizen-service"
+]
+
+# Keywords indicating downloadable guidelines/documents
+DOCUMENT_KEYWORDS = [
+    "guideline", "document", "instruction", "manual", "notification",
+    "annexure", "format", "brochure", "faq", "circular"
+]
 
 # Database Configuration (MySQL with SQLite fallback)
 MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")

@@ -45,6 +45,9 @@ class ScrapedPage(Base):
     raw_html = Column(Text)
     meta_description = Column(Text)
     content_hash = Column(String(64), index=True, nullable=True)
+    page_type = Column(String(50), default="GENERAL", index=True)  # HOME, SCHEME, APPLICATION_FORM, REDIRECT, GENERAL
+    parent_url = Column(String(500), nullable=True)
+    target_redirect_url = Column(String(500), nullable=True)
     http_status = Column(Integer, default=200)
     pdf_count = Column(Integer, default=0)
     links_count = Column(Integer, default=0)
@@ -86,13 +89,19 @@ class ScrapeRunLog(Base):
 
 def init_db():
     Base.metadata.create_all(bind=engine)
-    # Ensure content_hash column exists on SQLite table
+    # Ensure added columns exist on SQLite / MySQL tables safely
     with engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE scraped_pages ADD COLUMN content_hash VARCHAR;"))
-            conn.commit()
-        except Exception:
-            pass  # Column already exists
+        for col_name, col_type in [
+            ("content_hash", "VARCHAR(64)"),
+            ("page_type", "VARCHAR(50) DEFAULT 'GENERAL'"),
+            ("parent_url", "VARCHAR(500)"),
+            ("target_redirect_url", "VARCHAR(500)")
+        ]:
+            try:
+                conn.execute(text(f"ALTER TABLE scraped_pages ADD COLUMN {col_name} {col_type};"))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
 
 
 def get_db():
@@ -112,6 +121,9 @@ def save_scraped_page(
     raw_html: str,
     meta_description: str = "",
     content_hash: str = "",
+    page_type: str = "GENERAL",
+    parent_url: Optional[str] = None,
+    target_redirect_url: Optional[str] = None,
     http_status: int = 200,
     pdf_count: int = 0,
     links_count: int = 0,
@@ -135,6 +147,11 @@ def save_scraped_page(
         existing.raw_html = raw_html
         existing.meta_description = meta_description
         existing.content_hash = content_hash
+        existing.page_type = page_type
+        if parent_url:
+            existing.parent_url = parent_url
+        if target_redirect_url:
+            existing.target_redirect_url = target_redirect_url
         existing.http_status = http_status
         existing.pdf_count = pdf_count
         existing.links_count = links_count
@@ -153,6 +170,9 @@ def save_scraped_page(
             raw_html=raw_html,
             meta_description=meta_description,
             content_hash=content_hash,
+            page_type=page_type,
+            parent_url=parent_url,
+            target_redirect_url=target_redirect_url,
             http_status=http_status,
             pdf_count=pdf_count,
             links_count=links_count,

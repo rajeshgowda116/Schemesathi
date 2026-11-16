@@ -1,510 +1,1218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SchemeSathi - Cleaned Government Schemes Intelligence</title>
-    <!-- Bootstrap 5 CSS & FontAwesome Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-hover-border: #818cf8;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SchemeSathi - Karnataka Government Schemes & Citizen AI Assistant</title>
+  <meta name="description" content="Discover, verify eligibility, and apply for Karnataka Government welfare schemes with your personalized citizen profile and AI assistant.">
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#6d28d9',
+              dark: '#4c1d95',
+              light: '#f5f3ff',
+              sidebar: '#fbf9ff',
+              emerald: '#059669',
+              amber: '#d97706',
+              blue: '#2563eb',
+              pink: '#db2777'
+            }
+          }
         }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(90deg, #1e3a8a, #7e22ce, #db2777);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        body {
-            background-color: #f8fafc;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: #1e293b;
-        }
+    .hero-bg {
+      background: linear-gradient(180deg, rgba(245, 243, 255, 0.9) 0%, rgba(255, 255, 255, 1) 100%);
+      position: relative;
+      overflow: hidden;
+    }
 
-        .hero-banner {
-            background: var(--bg-gradient);
-            color: #ffffff;
-            padding: 45px 0 35px 0;
-            border-bottom: 4px solid var(--primary-color);
-        }
+    .bg-shape-left {
+      position: absolute;
+      left: -5%;
+      top: 15%;
+      width: 380px;
+      height: 200px;
+      background: linear-gradient(90deg, rgba(255, 153, 51, 0.15), rgba(255, 255, 255, 0), rgba(19, 136, 8, 0.15));
+      border-radius: 50%;
+      filter: blur(50px);
+      z-index: 0;
+      pointer-events: none;
+    }
 
-        .scheme-box-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-        }
+    .bg-shape-right {
+      position: absolute;
+      right: -3%;
+      top: 10%;
+      width: 320px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(109, 40, 217, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+      filter: blur(40px);
+      z-index: 0;
+      pointer-events: none;
+    }
 
-        .scheme-box {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
-            position: relative;
-        }
+    .card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        .scheme-box:hover {
-            transform: translateY(-5px);
-            border-color: var(--card-hover-border);
-            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.12);
-        }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 30px -10px rgba(109, 40, 217, 0.15), 0 8px 12px -6px rgba(0, 0, 0, 0.05);
+    }
 
-        .scheme-box .card-body {
-            padding: 24px;
-        }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
 
-        .scheme-box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
+    @keyframes subtle-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .animate-subtle-pulse {
+      animation: subtle-pulse 3s infinite ease-in-out;
+    }
 
-        .scheme-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #0f172a;
-            line-height: 1.3;
-            margin-bottom: 8px;
-        }
-
-        .state-badge {
-            background: #e0e7ff;
-            color: #3730a3;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .dept-name {
-            font-size: 0.85rem;
-            color: #64748b;
-            font-weight: 600;
-            margin-bottom: 14px;
-        }
-
-        .scheme-desc {
-            font-size: 0.92rem;
-            color: #475569;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin-bottom: 18px;
-        }
-
-        .badge-chip {
-            font-size: 0.78rem;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .badge-age { background: #fef3c7; color: #92400e; }
-        .badge-income { background: #dcfce7; color: #166534; }
-        .badge-category { background: #f3e8ff; color: #6b21a8; }
-        .badge-occupation { background: #e0f2fe; color: #075985; }
-
-        .scheme-box-footer {
-            padding: 16px 24px;
-            background: #f8fafc;
-            border-top: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .search-container {
-            max-width: 650px;
-            margin: -25px auto 35px auto;
-            position: relative;
-            z-index: 100;
-        }
-
-        .search-input {
-            height: 56px;
-            border-radius: 12px;
-            padding-left: 50px;
-            font-size: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            border: 1px solid #cbd5e1;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 18px;
-            font-size: 1.2rem;
-            color: #94a3b8;
-        }
-
-        .counter-badge {
-            background: rgba(255,255,255,0.15);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-    </style>
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    .robot-eye {
+      animation: blink 4s infinite ease-in-out;
+      transform-origin: center;
+    }
+  </style>
 </head>
-<body>
 
-    <!-- Header / Hero Section -->
-    <div class="hero-banner">
-        <div class="container text-center">
-            <h1 class="fw-bold mb-2"><i class="fa-solid fa-graduation-cap me-2 text-warning"></i>SchemeSathi</h1>
-            <p class="lead text-light opacity-75 mb-3">AI-Powered Karnataka Government Scheme Intelligence System</p>
-            <span class="counter-badge" id="scheme-counter"><i class="fa-solid fa-box-archive me-1"></i> Cleaned Schemes: Loading...</span>
-        </div>
-    </div>
+<body class="bg-slate-50 text-gray-800 antialiased flex flex-col min-h-screen">
 
-    <!-- Search & Filter Controls -->
-    <div class="container">
-        <div class="search-container">
-            <div class="position-relative">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="searchInput" class="form-control search-input" placeholder="Search schemes by name, department, category, or eligibility..." oninput="filterSchemes()">
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-20 items-center">
+        
+        <!-- Logo -->
+        <a href="#home" class="flex items-center gap-3 cursor-pointer group">
+          <div class="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-light border border-purple-100 group-hover:scale-105 transition-transform shadow-sm">
+            <i class="fa-solid fa-hands-holding-child text-brand-purple text-2xl z-10"></i>
+            <i class="fa-solid fa-sparkles text-amber-500 absolute -top-1 -right-1 text-xs"></i>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-2xl tracking-tight text-indigo-950">Scheme<span class="text-brand-purple">Sathi</span></span>
+              <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Karnataka</span>
             </div>
-        </div>
+            <span class="text-xs text-gray-500 font-medium">Your AI Assistant for Government Schemes</span>
+          </div>
+        </a>
 
-        <!-- Filter Chips Row -->
-        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4" id="filter-chips">
-            <button class="btn btn-sm btn-dark px-3 rounded-pill active" onclick="setCategoryFilter('ALL', this)">All Schemes</button>
-            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('SC', this)">SC / ST</button>
-            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('Student', this)">Students</button>
-            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('Woman', this)">Women</button>
-            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('BPL', this)">BPL Card</button>
-            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="setCategoryFilter('Youth', this)">Unemployed Youth</button>
-        </div>
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden lg:flex space-x-1 items-center bg-gray-100/80 rounded-full px-2 py-1.5 border border-gray-200/60 shadow-inner">
+          <a href="#home" class="flex items-center gap-2 text-gray-700 hover:text-brand-purple px-4 py-1.5 rounded-full text-sm font-semibold transition-colors">
+            <i class="fa-solid fa-house text-xs"></i> Home
+          </a>
+          <a href="#schemes" class="flex items-center gap-2 text-gray-700 hover:text-brand-purple px-4 py-1.5 rounded-full text-sm font-semibold transition-colors">
+            <i class="fa-regular fa-folder-open text-xs"></i> Schemes
+          </a>
+          <a href="#profile-matcher" class="flex items-center gap-2 text-gray-700 hover:text-brand-purple px-4 py-1.5 rounded-full text-sm font-semibold transition-colors">
+            <i class="fa-solid fa-bullseye text-xs text-brand-emerald"></i> Match Profile
+          </a>
+          <a href="chatbot.html" class="flex items-center gap-2 text-gray-700 hover:text-brand-purple px-4 py-1.5 rounded-full text-sm font-semibold transition-colors">
+            <i class="fa-solid fa-wand-magic-sparkles text-xs text-brand-purple"></i> Ask AI
+          </a>
+          <a href="#forms" class="flex items-center gap-2 text-gray-700 hover:text-brand-purple px-4 py-1.5 rounded-full text-sm font-semibold transition-colors">
+            <i class="fa-solid fa-file-pdf text-xs text-rose-500"></i> Forms & PDFs
+          </a>
+          <a href="/admin" target="_blank" class="flex items-center gap-1.5 text-gray-600 hover:text-indigo-900 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-gray-200 shadow-xs hover:border-gray-300 transition-all">
+            <i class="fa-solid fa-shield-halved text-xs text-brand-purple"></i> Admin Panel
+            <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-gray-400"></i>
+          </a>
+        </nav>
 
-        <!-- Scheme Card Boxes Grid -->
-        <div class="scheme-box-grid mb-5" id="schemeGrid">
-            <!-- Scheme boxes will be dynamically rendered here -->
+        <!-- Right Action Items -->
+        <div class="flex items-center gap-3">
+          
+          <!-- Live AI Chat Quick Pill -->
+          <a href="chatbot.html" class="relative inline-flex items-center gap-2 bg-gradient-to-r from-brand-purple to-indigo-700 hover:from-brand-dark hover:to-indigo-800 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md shadow-purple-200 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+            <span class="hidden sm:inline">Ask AI Sathi</span>
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            </span>
+          </a>
+
+          <!-- Citizen Profile Button -->
+          <button onclick="openProfileModal()" id="profile-pill-btn" class="flex items-center gap-2 bg-brand-light border border-purple-200 hover:border-brand-purple text-brand-purple px-3.5 py-2 rounded-full text-sm font-medium transition-all group">
+            <i class="fa-regular fa-user text-brand-purple group-hover:scale-110 transition-transform"></i>
+            <span id="profile-pill-text" class="hidden md:inline text-xs font-semibold text-gray-700">Citizen Profile</span>
+          </button>
+
+          <!-- Mobile Menu Hamburger -->
+          <button onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
         </div>
+      </div>
     </div>
 
-    <!-- Modal for Scheme Full Details -->
-    <div class="modal fade" id="schemeModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow">
-                <div class="modal-header bg-light">
-                    <div>
-                        <span class="state-badge mb-1 d-inline-block" id="modal-state">Karnataka</span>
-                        <h4 class="modal-title fw-bold text-dark" id="modal-title">Scheme Title</h4>
-                        <div class="text-muted small fw-semibold" id="modal-dept">Department</div>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-align-left me-1"></i> Scheme Description</h6>
-                    <p id="modal-desc" class="text-secondary mb-4"></p>
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2">
+      <a href="#home" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-brand-purple">
+        <i class="fa-solid fa-house w-6 text-brand-purple"></i> Home
+      </a>
+      <a href="#schemes" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-brand-purple">
+        <i class="fa-regular fa-folder-open w-6 text-brand-purple"></i> Explore Schemes
+      </a>
+      <a href="#profile-matcher" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-brand-purple">
+        <i class="fa-solid fa-bullseye w-6 text-brand-emerald"></i> Match Profile
+      </a>
+      <a href="chatbot.html" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-brand-purple">
+        <i class="fa-solid fa-wand-magic-sparkles w-6 text-brand-purple"></i> Ask AI Assistant
+      </a>
+      <a href="#forms" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-brand-purple">
+        <i class="fa-solid fa-file-pdf w-6 text-rose-500"></i> Download Forms & PDFs
+      </a>
+      <a href="/admin" target="_blank" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-brand-purple">
+        <i class="fa-solid fa-shield-halved w-6 text-indigo-700"></i> Admin Panel & Scraper
+      </a>
+    </div>
+  </header>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-3">
-                                <small class="text-muted d-block fw-bold mb-1">AGE REQUIREMENTS</small>
-                                <span class="fw-bold text-dark" id="modal-age">Not specified</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-3">
-                                <small class="text-muted d-block fw-bold mb-1">MAX ANNUAL INCOME</small>
-                                <span class="fw-bold text-dark" id="modal-income">Not specified</span>
-                            </div>
-                        </div>
-                    </div>
+  <!-- ================= HERO SECTION ================= -->
+  <main id="home" class="flex-grow">
+    <section class="hero-bg pt-12 pb-16 px-4 sm:px-6 lg:px-8 text-center border-b border-gray-100">
+      <div class="bg-shape-left"></div>
+      <div class="bg-shape-right"></div>
 
-                    <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-gift me-1"></i> Key Benefits</h6>
-                    <ul id="modal-benefits" class="mb-4"></ul>
+      <div class="relative z-10 max-w-5xl mx-auto">
+        <!-- Live System Status Badge -->
+        <div class="inline-flex items-center gap-2 bg-white/90 border border-purple-200/80 px-4 py-1.5 rounded-full text-xs font-semibold text-brand-purple mb-6 shadow-xs backdrop-blur-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Karnataka Citizen Welfare Intelligence</span>
+          <span class="text-gray-300">•</span>
+          <span id="hero-verified-badge" class="text-gray-600 font-normal">17 Verified Official Schemes Loaded</span>
+        </div>
 
-                    <h6 class="fw-bold text-warning text-dark mb-2"><i class="fa-solid fa-user-check me-1"></i> Eligibility Criteria</h6>
-                    <ul id="modal-eligibility" class="mb-4"></ul>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight">
+          Explore Government <span class="gradient-text">Schemes & Subsidies</span>
+        </h1>
+        <p class="text-base sm:text-lg text-gray-600 mb-8 max-w-3xl mx-auto font-normal leading-relaxed">
+          Find, check personalized eligibility, and apply for Karnataka welfare programs, scholarships, women empowerment grants, and farmer assistance backed by official records and verified AI intelligence.
+        </p>
 
-                    <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-folder-open me-1"></i> Required Documents</h6>
-                    <ul id="modal-docs" class="mb-4"></ul>
+        <!-- Omnibar Search & Filter Box -->
+        <div class="max-w-3xl mx-auto bg-white rounded-2xl p-2 sm:p-2.5 shadow-xl shadow-purple-900/5 border border-purple-100 flex flex-col sm:flex-row gap-2 items-center">
+          <div class="relative flex-grow w-full flex items-center">
+            <i class="fa-solid fa-magnifying-glass text-gray-400 absolute left-4 text-base"></i>
+            <input 
+              type="text" 
+              id="scheme-search-input"
+              oninput="handleSearch(this.value)"
+              placeholder="Search schemes, scholarships, farmer subsidies, ₹2000 DBT, free bus..." 
+              class="w-full pl-11 pr-10 py-3 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 text-sm font-medium"
+            />
+            <button 
+              onclick="clearSearch()" 
+              id="clear-search-btn" 
+              class="hidden absolute right-3 w-6 h-6 rounded-full bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          
+          <div class="flex gap-2 w-full sm:w-auto">
+            <a 
+              href="chatbot.html"
+              class="w-full sm:w-auto bg-brand-purple hover:bg-brand-dark text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-sparkles text-amber-300"></i>
+              <span>Ask AI</span>
+            </a>
+          </div>
+        </div>
 
-                    <h6 class="fw-bold text-info text-dark mb-2"><i class="fa-solid fa-list-check me-1"></i> Application Process</h6>
-                    <p id="modal-process" class="text-secondary mb-3"></p>
-                </div>
-                <div class="modal-footer bg-light justify-content-between">
-                    <span class="text-muted small">Source Date: <span id="modal-date">-</span></span>
-                    <a id="modal-url" href="#" target="_blank" class="btn btn-primary px-4 rounded-pill">
-                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Official Portal
-                    </a>
-                </div>
+        <!-- Quick Tag Suggestions -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-5 text-xs text-gray-500">
+          <span class="font-semibold text-gray-600"><i class="fa-solid fa-fire text-amber-500 mr-1"></i>Trending:</span>
+          <button onclick="setSearchQuery('Post-Matric')" class="bg-white hover:bg-purple-50 text-gray-600 hover:text-brand-purple px-2.5 py-1 rounded-full border border-gray-200 transition-colors">Post-Matric Scholarship</button>
+          <button onclick="setSearchQuery('Gruha Lakshmi')" class="bg-white hover:bg-purple-50 text-gray-600 hover:text-brand-purple px-2.5 py-1 rounded-full border border-gray-200 transition-colors">Gruha Lakshmi (₹2,000)</button>
+          <button onclick="setSearchQuery('Yuva Nidhi')" class="bg-white hover:bg-purple-50 text-gray-600 hover:text-brand-purple px-2.5 py-1 rounded-full border border-gray-200 transition-colors">Yuva Nidhi (Unemployment)</button>
+          <button onclick="setSearchQuery('Gruha Jyoti')" class="bg-white hover:bg-purple-50 text-gray-600 hover:text-brand-purple px-2.5 py-1 rounded-full border border-gray-200 transition-colors">Gruha Jyoti (200 Units Free)</button>
+          <button onclick="setSearchQuery('Shakti')" class="bg-white hover:bg-purple-50 text-gray-600 hover:text-brand-purple px-2.5 py-1 rounded-full border border-gray-200 transition-colors">Shakti (Free Bus Travel)</button>
+          <button onclick="setSearchQuery('Farmer')" class="bg-white hover:bg-purple-50 text-gray-600 hover:text-brand-purple px-2.5 py-1 rounded-full border border-gray-200 transition-colors">Farmer Vidya Nidhi</button>
+        </div>
+
+        <!-- System Metrics Counter Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto pt-6 border-t border-purple-100/60">
+          <div class="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-gray-100">
+            <div id="stat-schemes-count" class="text-2xl font-extrabold text-brand-purple">17</div>
+            <div class="text-xs text-gray-500 font-medium">Cleaned Schemes</div>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-gray-100">
+            <div id="stat-depts-count" class="text-2xl font-extrabold text-indigo-900">13</div>
+            <div class="text-xs text-gray-500 font-medium">State Departments</div>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-gray-100">
+            <div id="stat-pdfs-count" class="text-2xl font-extrabold text-rose-600">2+</div>
+            <div class="text-xs text-gray-500 font-medium">Official PDF Forms</div>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur-xs rounded-xl border border-gray-100">
+            <div id="stat-vectors-count" class="text-2xl font-extrabold text-brand-emerald">103</div>
+            <div class="text-xs text-gray-500 font-medium">Qdrant Vector Chunks</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= CITIZEN PROFILE SMART MATCHER ================= -->
+    <section id="profile-matcher" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
+      <div class="bg-gradient-to-r from-indigo-900 via-brand-purple to-indigo-950 text-white rounded-2xl p-5 sm:p-6 shadow-xl shadow-indigo-950/10 border border-indigo-800">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="bg-amber-400 text-indigo-950 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <i class="fa-solid fa-bullseye"></i> SMART MATCHER
+              </span>
+              <span id="active-profile-summary" class="text-xs text-purple-200 font-medium">
+                Default: Karnataka Citizen (All Schemes Shown)
+              </span>
             </div>
+            <h2 class="text-lg sm:text-xl font-bold tracking-tight">
+              Personalized Eligibility Matcher
+            </h2>
+            <p class="text-xs sm:text-sm text-purple-200/90 max-w-2xl">
+              Set your age, occupation, caste/category, and income to filter schemes you are directly eligible for and receive custom AI answers.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Toggle Match Mode -->
+            <label class="relative inline-flex items-center cursor-pointer bg-white/10 hover:bg-white/15 px-3 py-2 rounded-xl border border-white/20 transition-colors">
+              <input type="checkbox" id="toggle-match-filter" onchange="toggleMatchFilter(this.checked)" class="sr-only peer">
+              <div class="w-9 h-5 bg-white/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[10px] after:left-[14px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+              <span class="ml-3 text-xs font-semibold text-white">Show Only Eligible</span>
+            </label>
+
+            <!-- Edit Profile Button -->
+            <button onclick="openProfileModal()" class="bg-white hover:bg-purple-50 text-indigo-950 px-4 py-2 rounded-xl text-xs font-bold shadow transition-all flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-brand-purple"></i>
+              <span>Customize Profile</span>
+            </button>
+          </div>
+
         </div>
+      </div>
+    </section>
+
+    <!-- ================= SCHEMES EXPLORER SECTION ================= -->
+    <section id="schemes" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20">
+      
+      <!-- Section Header & Filters Controls -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Karnataka Welfare <span class="text-brand-purple">Catalog</span>
+          </h2>
+          <p class="text-sm text-gray-500 mt-1">
+            Browse authenticated schemes, subsidies, and educational incentives.
+          </p>
+        </div>
+
+        <!-- Department and Sort Selectors -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <label for="dept-select" class="sr-only">Department</label>
+            <select id="dept-select" onchange="filterByDepartment(this.value)" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-brand-purple/20 focus:outline-none">
+              <option value="all">All Departments</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <label for="sort-select" class="sr-only">Sort By</label>
+            <select id="sort-select" onchange="handleSort(this.value)" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-brand-purple/20 focus:outline-none">
+              <option value="featured">Sort: Featured</option>
+              <option value="name_asc">Name: A to Z</option>
+              <option value="income_asc">Lowest Income First</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills Bar -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar" id="category-pills">
+        <!-- Will be populated dynamically -->
+      </div>
+
+      <!-- Active Filters Tag & Count -->
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-6 px-1">
+        <div class="flex items-center gap-2">
+          <span>Displaying <strong id="visible-schemes-count" class="text-brand-purple font-bold">17</strong> verified schemes</span>
+          <span id="active-filter-indicator" class="hidden bg-purple-100 text-brand-purple px-2 py-0.5 rounded font-semibold"></span>
+        </div>
+        <button onclick="resetAllFilters()" id="reset-filters-btn" class="hidden text-rose-600 hover:underline font-medium">
+          <i class="fa-solid fa-rotate-left mr-1"></i>Reset All Filters
+        </button>
+      </div>
+
+      <!-- Schemes Grid Container -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="schemes-container">
+        <!-- Cards populated dynamically by JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="no-results-state" class="hidden py-16 text-center bg-white rounded-2xl border border-dashed border-gray-200 p-8 max-w-xl mx-auto my-8">
+        <div class="w-16 h-16 rounded-full bg-purple-50 text-brand-purple mx-auto flex items-center justify-center text-2xl mb-4">
+          <i class="fa-solid fa-filter-circle-xmark"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">No matching schemes found</h3>
+        <p class="text-xs text-gray-500 mb-4">
+          Try loosening your search keywords or adjust your citizen profile filters.
+        </p>
+        <button onclick="resetAllFilters()" class="bg-brand-purple text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-brand-dark transition-colors">
+          Reset Filters & Show All
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ================= OFFICIAL FORMS & SCRAPED PDFS ================= -->
+    <section id="forms" class="bg-slate-100/70 border-t border-b border-gray-200 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-file-pdf"></i> Official Downloads
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Scraped Application Forms & Guidelines
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Directly download authentic RTI handbooks, scheme circulars, and application forms extracted from Karnataka portals.
+            </p>
+          </div>
+          <a href="/admin" target="_blank" class="text-xs font-bold text-indigo-700 hover:text-brand-purple flex items-center gap-1">
+            <span>View all scraped database files in Admin Panel</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="pdfs-container">
+          <!-- PDFs populated dynamically by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-slate-900 text-slate-400 pt-16 pb-12 border-t border-slate-800 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-brand-purple flex items-center justify-center text-white text-base">
+              <i class="fa-solid fa-hands-holding-child"></i>
+            </div>
+            <span class="font-extrabold text-xl text-white tracking-tight">Scheme<span class="text-purple-400">Sathi</span></span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            AI-powered welfare exploration, eligibility matching, and application assistance system for Karnataka citizens.
+          </p>
+          <div class="flex items-center gap-3 text-slate-300">
+            <span class="inline-flex items-center gap-1 text-[11px] text-emerald-400">
+              <i class="fa-solid fa-circle text-[8px]"></i> System Live & Grounded
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-white text-sm mb-3">Quick Navigation</h4>
+          <ul class="space-y-2">
+            <li><a href="#home" class="hover:text-white transition-colors">Home & Portal Search</a></li>
+            <li><a href="#schemes" class="hover:text-white transition-colors">Welfare Schemes Catalog</a></li>
+            <li><a href="#profile-matcher" class="hover:text-white transition-colors">Smart Eligibility Matcher</a></li>
+            <li><a href="chatbot.html" class="hover:text-white transition-colors">Ask AI Assistant</a></li>
+            <li><a href="#forms" class="hover:text-white transition-colors">Official Downloadable PDFs</a></li>
+            <li><a href="/admin" target="_blank" class="hover:text-white transition-colors text-purple-300">FastAPI Admin Panel</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-white text-sm mb-3">Key State Portals</h4>
+          <ul class="space-y-2">
+            <li><a href="https://sevasindhugs1.karnataka.gov.in/gl-sp/" target="_blank" rel="noopener" class="hover:text-white transition-colors flex items-center gap-1">Seva Sindhu Citizen Services <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></li>
+            <li><a href="https://ssp.karnataka.gov.in/" target="_blank" rel="noopener" class="hover:text-white transition-colors flex items-center gap-1">State Scholarship Portal (SSP) <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></li>
+            <li><a href="https://www.karnataka.gov.in/" target="_blank" rel="noopener" class="hover:text-white transition-colors flex items-center gap-1">Karnataka Government Portal <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></li>
+            <li><a href="https://serviceonline.gov.in/" target="_blank" rel="noopener" class="hover:text-white transition-colors flex items-center gap-1">ServicePlus Karnataka <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-white text-sm mb-3">Disclaimer</h4>
+          <p class="text-[11px] text-slate-400 leading-relaxed mb-3">
+            SchemeSathi extracts, structures, and synthesizes scheme data from public government portals. Sanction of benefits, final eligibility, and guidelines remain subject to the issuing Government Departments.
+          </p>
+          <div class="text-[10px] text-slate-500">
+            Version 2.0 • FastAPI • Qdrant Vector Engine • Built for Karnataka
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-4">
+        <div>&copy; 2026 SchemeSathi Welfare Intelligence. All rights reserved.</div>
+        <div class="flex items-center gap-4">
+          <a href="/admin" target="_blank" class="hover:text-slate-400">Scraper Control</a>
+          <a href="/docs" target="_blank" class="hover:text-slate-400">API Documentation</a>
+        </div>
+      </div>
     </div>
+  </footer>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- ================= CITIZEN PROFILE MODAL ================= -->
+  <div id="profile-modal-backdrop" onclick="closeProfileModal()" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-6 transition-opacity">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-200">
+      
+      <!-- Modal Header -->
+      <div class="p-6 bg-gradient-to-r from-indigo-900 to-brand-purple text-white relative">
+        <div class="flex items-center gap-2 text-xs font-semibold text-purple-200 mb-1">
+          <span>Personalization Engine</span>
+        </div>
+        <h3 class="text-xl font-bold tracking-tight text-white">
+          Configure Your Citizen Profile
+        </h3>
+        <p class="text-xs text-purple-200 mt-1">
+          Saved locally on your device to calculate eligibility and provide tailored AI advice.
+        </p>
+        <button onclick="closeProfileModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
 
-    <script>
-        let allSchemes = [];
-        let currentFilter = 'ALL';
+      <!-- Form Body -->
+      <form onsubmit="saveCitizenProfile(event)" class="p-6 space-y-4 text-xs text-gray-700">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Your Age</label>
+            <input type="number" id="profile-age" min="1" max="120" placeholder="e.g. 21" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple/20 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Gender</label>
+            <select id="profile-gender" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple/20 focus:outline-none bg-white">
+              <option value="Any">All / Prefer not to say</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Transgender">Transgender</option>
+            </select>
+          </div>
+        </div>
 
-        // Embedded default schemes fallback for offline / direct file opening
-        const defaultSchemesData = [
-            {
-                "scheme_name": "SSP Post-Matric Scholarship Scheme",
-                "state": "Karnataka",
-                "department": "Social Welfare Department",
-                "description": "Financial assistance provided for SC/ST students pursuing higher education across Karnataka colleges.",
-                "benefits": [
-                    "Full maintenance allowance paid monthly",
-                    "Compulsory non-refundable fee reimbursement",
-                    "Book bank facilities for professional courses"
-                ],
-                "eligibility": [
-                    "Applicants must be between 18 and 30 years of age",
-                    "Must belong to SC or ST category in Karnataka",
-                    "Annual family income should not exceed Rs. 2.5 lakh",
-                    "Must have passed previous qualifying examination with minimum 50% marks"
-                ],
-                "age_min": 18,
-                "age_max": 30,
-                "income_min": null,
-                "income_max": 250000.0,
-                "occupation": ["Student"],
-                "category": ["SC", "ST"],
-                "documents_required": [
-                    "Aadhaar Card",
-                    "Caste Certificate",
-                    "Income Certificate (showing family income below Rs 2.5 lakhs)",
-                    "SSLC Marks Card",
-                    "Bank Account Passbook linked with Aadhaar"
-                ],
-                "application_process": "1. Visit official SSP Portal at https://ssp.karnataka.gov.in/\n2. Register using Aadhaar number and e-KYC\n3. Upload required documents and submit online application.",
-                "official_url": "https://ssp.karnataka.gov.in/",
-                "source_date": "2026-10-01"
-            },
-            {
-                "scheme_name": "Gruha Lakshmi Scheme",
-                "state": "Karnataka",
-                "department": "Department of Women and Child Development",
-                "description": "Financial security scheme offering monthly financial support of ₹2,000 to the woman head of eligible families in Karnataka.",
-                "benefits": [
-                    "Direct Benefit Transfer (DBT) of ₹2,000 per month into bank account",
-                    "Empowerment of female heads of households"
-                ],
-                "eligibility": [
-                    "Woman head of the family named in BPL or APL ration cards",
-                    "Age of applicant must be minimum 18 years and below 60 years",
-                    "Neither applicant nor spouse should be an income tax payer",
-                    "Annual family income should not exceed ₹2 lakh"
-                ],
-                "age_min": 18,
-                "age_max": 60,
-                "income_min": null,
-                "income_max": 200000.0,
-                "occupation": ["Woman / Widow"],
-                "category": ["BPL", "General"],
-                "documents_required": [
-                    "Aadhaar Card of female head",
-                    "Ration Card (BPL/APL)",
-                    "Bank Account details linked with Aadhaar",
-                    "Spouse Aadhaar Card"
-                ],
-                "application_process": "Apply online at Seva Sindhu Portal (https://sevasindhugs1.karnataka.gov.in/gl-sp/) or visit nearest Grama One/Karnataka One centers.",
-                "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/",
-                "source_date": "2026-10-02"
-            },
-            {
-                "scheme_name": "Yuva Nidhi Scheme",
-                "state": "Karnataka",
-                "department": "Department of Skill Development and Entrepreneurship",
-                "description": "Unemployment assistance scheme for degree and diploma graduates in Karnataka.",
-                "benefits": [
-                    "₹3,000 monthly allowance for unemployed graduates",
-                    "₹1,500 monthly allowance for unemployed diploma holders",
-                    "Skill training assistance for job seekers"
-                ],
-                "eligibility": [
-                    "Applicants must be between 18 and 30 years of age",
-                    "Must have passed Degree/Diploma in academic year 2023-24 onwards",
-                    "Must be unemployed for at least 180 days after graduation"
-                ],
-                "age_min": 18,
-                "age_max": 30,
-                "income_min": null,
-                "income_max": null,
-                "occupation": ["Unemployed Youth", "Student"],
-                "category": ["General"],
-                "documents_required": [
-                    "Degree/Diploma Marksheets",
-                    "Aadhaar Card",
-                    "Domicile Certificate of Karnataka",
-                    "Bank Passbook"
-                ],
-                "application_process": "Register online on Seva Sindhu Portal with Aadhaar authentication.",
-                "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/",
-                "source_date": "2026-10-03"
-            }
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Current Occupation / Role</label>
+          <select id="profile-occupation" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple/20 focus:outline-none bg-white">
+            <option value="Any">All Occupations / General Citizen</option>
+            <option value="Student">Student (Pre/Post-Matric, Higher Ed)</option>
+            <option value="Unemployed Youth">Unemployed Youth / Graduate</option>
+            <option value="Farmer / Agriculture">Farmer / Agricultural Household</option>
+            <option value="Woman / Widow">Woman Head of Family / Widow</option>
+            <option value="Worker / Labourer">Worker / Artisan / Labourer</option>
+            <option value="Senior Citizen">Senior Citizen (60+ yrs)</option>
+            <option value="Differently Abled">Divyangjan / Differently Abled</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Social Category / Caste</label>
+            <select id="profile-category" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple/20 focus:outline-none bg-white">
+              <option value="Any">All Categories</option>
+              <option value="SC">SC (Scheduled Caste)</option>
+              <option value="ST">ST (Scheduled Tribe)</option>
+              <option value="OBC">OBC / Backward Classes</option>
+              <option value="Minority">Minority Communities (Muslim, Christian, Jain, etc.)</option>
+              <option value="General">General Category</option>
+              <option value="BPL">BPL / Antyodaya Household</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Annual Family Income</label>
+            <select id="profile-income" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-purple/20 focus:outline-none bg-white">
+              <option value="9999999">No Limit / Any Income</option>
+              <option value="100000">Below ₹1,00,000</option>
+              <option value="200000">Below ₹2,00,000 (Gruha Lakshmi standard)</option>
+              <option value="250000">Below ₹2,50,000 (SSP SC/ST standard)</option>
+              <option value="500000">Below ₹5,00,000</option>
+              <option value="800000">Below ₹8,00,000</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">State Residence</label>
+          <input type="text" id="profile-state" value="Karnataka" readonly class="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed">
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+          <button type="button" onclick="clearCitizenProfile()" class="text-rose-600 hover:underline font-semibold">
+            Clear Profile
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 font-semibold">
+              Cancel
+            </button>
+            <button type="submit" class="bg-brand-purple hover:bg-brand-dark text-white px-5 py-2 rounded-xl font-bold shadow-sm transition-colors">
+              Save & Apply Matches
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= FLOATING TOAST NOTIFICATION ================= -->
+  <div id="toast" class="hidden fixed bottom-6 left-6 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-xl border border-slate-800 flex items-center gap-3 transition-opacity">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toast-msg">Notification message</span>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC & DATASET ================= -->
+  <script>
+    // Embedded authentic cleaned schemes dataset (fallback & immediate render)
+    const EMBEDDED_SCHEMES = [{"scheme_id": 1, "id": 1, "scheme_name": "SSP Post-Matric Scholarship Scheme", "state": "Karnataka", "department": "Social Welfare Department", "description": "Financial assistance provided for SC/ST students pursuing higher education across Karnataka colleges.", "benefits": ["Full maintenance allowance paid monthly", "Compulsory non-refundable fee reimbursement", "Book bank facilities for professional courses"], "eligibility": ["Applicants must be between 18 and 30 years of age", "Must belong to SC or ST category in Karnataka", "Annual family income should not exceed Rs. 2.5 lakh", "Must have passed previous qualifying examination with minimum 50% marks"], "age_min": 18, "age_max": 30, "income_min": null, "income_max": 250000.0, "occupation": ["Student"], "category": ["SC", "ST"], "documents_required": ["Aadhaar Card", "Caste Certificate", "Income Certificate (showing family income below Rs 2.5 lakhs)", "SSLC Marks Card", "Bank Account Passbook linked with Aadhaar"], "application_process": "1. Visit official SSP Portal at https://ssp.karnataka.gov.in/\n2. Register using Aadhaar number and e-KYC\n3. Upload required documents and submit online application.", "official_url": "https://ssp.karnataka.gov.in/", "source_date": "2026-10-01", "last_updated": "", "created_at": "2026-10-04T03:32:27.990007", "updated_at": "2026-11-15T15:45:00.155292", "computed_category": "Education & Scholarships"}, {"scheme_id": 2, "id": 2, "scheme_name": "Gruha Lakshmi Scheme", "state": "Karnataka", "department": "Department of Women and Child Development", "description": "<div class='header'>Official Notice</div>Financial security scheme offering monthly financial support of ₹2,000 to the woman head of eligible families in Karnataka.", "benefits": ["Direct Benefit Transfer (DBT) of ₹2,000 per month into bank account", "Empowerment of female heads of households"], "eligibility": ["Woman head of the family named in BPL or APL ration cards", "Age of applicant must be minimum 18 years and below 60 years", "Neither applicant nor spouse should be an income tax payer", "Annual family income should not exceed ₹2 lakh"], "age_min": 18, "age_max": 60, "income_min": null, "income_max": 200000.0, "occupation": ["Woman / Widow"], "category": ["BPL", "General"], "documents_required": ["Aadhaar Card of female head", "Ration Card (BPL/APL)", "Bank Account details linked with Aadhaar", "Spouse Aadhaar Card"], "application_process": "Apply online at Seva Sindhu Portal (https://sevasindhugs1.karnataka.gov.in/gl-sp/) or visit nearest Grama One/Karnataka One centers.", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/", "source_date": "2026-10-02", "last_updated": "", "created_at": "2026-10-04T03:32:27.998216", "updated_at": "2026-11-15T15:45:00.162592", "computed_category": "Women & Child Welfare"}, {"scheme_id": 3, "id": 3, "scheme_name": "Yuva Nidhi Scheme", "state": "Karnataka", "department": "Department of Skill Development and Entrepreneurship", "description": "Unemployment assistance scheme for degree and diploma graduates in Karnataka.", "benefits": ["₹3,000 monthly allowance for unemployed graduates", "₹1,500 monthly allowance for unemployed diploma holders", "Skill training assistance for job seekers"], "eligibility": ["Applicants must be between 18 and 30 years of age", "Must have passed Degree/Diploma in academic year 2023-24 onwards", "Must be unemployed for at least 180 days after graduation"], "age_min": 18, "age_max": 30, "income_min": null, "income_max": null, "occupation": ["Unemployed Youth", "Student"], "category": ["General"], "documents_required": ["Degree/Diploma Marksheets", "Aadhaar Card", "Domicile Certificate of Karnataka", "Bank Passbook"], "application_process": "Register online on Seva Sindhu Portal with Aadhaar authentication.", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:32:28.002627", "updated_at": "2026-11-15T15:45:00.169671", "computed_category": "Youth & Employment"}, {"scheme_id": 4, "id": 4, "scheme_name": "Seva Sindhu 1", "state": "Karnataka", "department": "sevasindhugs1.karnataka.gov.in", "description": "﻿\nSeva Sindhu 1\nಸೇವಾ ಸಿಂಧು\nSeva Sindhu\nApply for Service\nGet OTP\nForgot Password\n|\nNew user ? Register here\n|\nKnow Your Eligibility\nCheck Your Application Status\nSelect Department\nRevenue Department\nFood And Civil Supplies Department\nSelect Service\nAgricultural Family member Certificate\nAgricultural Labour Certificate\nAddition of Name in RC\nCorrection of incorrect card category entries like APL. BPL & AAY\nRegister Yourself\nDo you want to proceed?\nProceed\nCancel", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Worker / Labourer"], "category": ["BPL"], "documents_required": [], "application_process": "", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:00.332582", "updated_at": "2026-11-15T15:44:59.149967", "computed_category": "Citizen Services & Portals"}, {"scheme_id": 9, "id": 9, "scheme_name": "Please click here to go to the Home Page", "state": "Karnataka", "department": "Department of e-Governance / Seva Sindhu", "description": "It seems like the page you are looking for does not exist.\nPlease\nclick here\nto go to the Home Page", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": [], "category": [], "documents_required": [], "application_process": "", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/resources/css_theme/panchayat_green.css", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:00.366751", "updated_at": "2026-11-16T13:22:58.556328", "computed_category": "Citizen Services & Portals"}, {"scheme_id": 13, "id": 13, "scheme_name": "ServicePlus | Know Your Eligibility", "state": "Karnataka", "department": "Department of e-Governance / Seva Sindhu", "description": "ServicePlus | Know Your Eligibility\nPanchayat Informatics Division\nNational Informatics Centre\nMinistry of Electronics & Information Technology, Government of\nIndia\nA Block, CGO Complex, Lodhi Road, New Delhi-110 003.\nserviceplus[at]googlegroups[dot]com\nhttps://serviceonline.gov.in\nThe Government will have complete discretion to share the details of\nyour use of the Web Site and/ or data entered by you with regulators\nor with any other third party, or in order to resolve disputes or\ncomplaints which relate to the Web Site.\nAll right are reserved @ 2018\nServicePlus, on behalf of Service Owner Department,provides only the\nfacility for transacting with Government Offices through the\nInternet. The service delivery is subject to the acts and rules\npromulgated by the respective Government from time to time.\nElectronic delivery of Government services are in compliance with\nthe IT act 2000. The special conditions and the terms of service\napplicable to Internet delivery are detailed in this document.\nThe following terms and conditions will apply if you wish to use the\nInternet for availing a service. Please go through the conditions\ncarefully and if you accept them, you may register yourself and\ntransact on the site. On using this site for service delivery, you\nare deemed to have agreed to the terms and conditions set forth\nbelow. If You do not agree with all these terms and conditions, you\nmust not transact on this Website.\nIf a user violates the terms and conditions Government (service\nowner) reserves the right to deactivate all such user registration\nand cancel any or all services requested without any notice. Garbage\n/ Junk values in profile may lead to Deactivation.\nOperationalization of this agreement is subject to existing laws and\nlegal processes of the respective Government, and nothing contained\nin this agreement is in derogation of Government's right to comply\nwith law enforcement requests or requirements relating to your use\nof this Web Site or information provided to or gathered by this site\nwith respect to such use. You agree that Government may provide\ndetails of your use of the Web Site to regulators or police or to\nany other third party, or in order to resolve disputes or complaints\nwhich relate to the Web Site, at Governmentâs complete discretion.\nThis agreement is made between: respective service owner department\nof the respective government who has configured the\nserviceGovernment (âUsâ) and The User (âYouâ), the individual, whose\ndetails are set out in the Portal User Creation page.\nPayment Option\nThe list of payment options available are internet banking /debit\ncard payment / credit card payment from banks that are listed when\nselecting each of the above options. Apart from the fee chargeable\nto Government against each service, bank / payment gateway\ntransaction charges will be applicable extra. In case of a failed\ntransaction the user shall have no right to claim the amount. The\nloss on this account shall not be borne either by Government or by\nthe Banks /Payment Gateways.\nUser Creation\nYou are responsible for maintaining the confidentiality of the\npassword and account, and are fully responsible for all activities\nthat occur under your password or account. Complaints Procedure\nYou can reach us on the contact details given in the âContactsâ link\ngiven in the login page.\nYour obligations\nGeneral Obligations:\nYou shall access ServicePlus web site only for lawful purposes and\nyou shall be responsible for complying with all applicable laws,\nstatutes and regulations in connection with the use of Government\nweb site. This Website is for your personal or commercial use by\napproved kiosks. You shall not modify, copy, distribute, transmit,\ndisplay, perform, reproduce, publish, license, create derivative\nworks from, transfer or sell any information, or services obtained\nfrom this Website. You shall not create a hypertext link to the\nWebsite or \"frame\" the Website, except with the express advance\nwritten permission of the Government.\nInformation Provided\nThe information you provide in the Registration page must be\ncomplete and accurate. Government 00. reserves the right at all\ntimes to disclose any information as deems necessary to satisfy any\napplicable law, regulation, legal process.\nTermination\nWe may at any time at our sole discretion and without giving any\nreason or any prior notice terminate or temporarily suspend your\naccess to all or any part of the web site.\nSubmitted applications will be processed only after successful\ntransaction has been done with the payment gateway. In case of a\nfailed transaction the user shall have no right to claim the amount\nHowever, cancellation/refund policy for a service will be governed\nsolely on the basis of applicable rules and regulations of the\nservice as defined by department/agency owning the service.", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": [], "category": ["ST"], "documents_required": [], "application_process": "", "official_url": "https://sevasindhugs1.karnataka.gov.in/gl-sp/knowYourEligibility.html", "source_date": "2026-11-16", "last_updated": "", "created_at": "2026-10-04T03:39:00.441299", "updated_at": "2026-11-16T13:22:58.481066", "computed_category": "Food & Civil Supplies"}, {"scheme_id": 24, "id": 24, "scheme_name": "State Scholarship Portal – Government of Karnataka(ಕರ್ನಾಟಕ ಸರ್ಕಾರ)", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "State Scholarship Portal – Government of Karnataka(ಕರ್ನಾಟಕ ಸರ್ಕಾರ)", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/homepage", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:00.987225", "updated_at": "2026-11-15T15:45:00.370254", "computed_category": "Education & Scholarships"}, {"scheme_id": 26, "id": 26, "scheme_name": "Screen Reader | State Scholarship Portal - Government of Karnataka", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "Screen Reader | State Scholarship Portal - Government of Karnataka", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/screenreader", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:01.025622", "updated_at": "2026-11-15T15:45:00.332515", "computed_category": "Education & Scholarships"}, {"scheme_id": 29, "id": 29, "scheme_name": "RTI | State Scholarship Portal - Government of Karnataka", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "RTI | State Scholarship Portal - Government of Karnataka", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/RTI", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:01.157358", "updated_at": "2026-11-15T15:45:00.389563", "computed_category": "Education & Scholarships"}, {"scheme_id": 31, "id": 31, "scheme_name": "Downloads | State Scholarship Portal - Government of Karnataka", "state": "Karnataka", "department": "Social Welfare Department / State Scholarship Portal", "description": "Downloads | State Scholarship Portal - Government of Karnataka", "benefits": [], "eligibility": [], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Student"], "category": [], "documents_required": [], "application_process": "", "official_url": "https://ssp.karnataka.gov.in/Downloads/", "source_date": "2026-10-03", "last_updated": "", "created_at": "2026-10-04T03:39:01.221507", "updated_at": "2026-11-15T15:45:00.435958", "computed_category": "Education & Scholarships"}, {"scheme_id": 49, "id": 49, "scheme_name": "Gruha Jyoti Scheme", "state": "Karnataka", "department": "Energy Department, Government of Karnataka", "description": "Free electricity scheme providing up to 200 units of free power per month to all residential households in Karnataka.", "benefits": ["Zero electricity bill for monthly usage up to 200 units", "Coverage for all domestic electricity consumers and tenants"], "eligibility": ["All domestic residential electricity connections in Karnataka", "Monthly average electricity consumption should be within 200 units", "One connection per household/Aadhaar number"], "age_min": null, "age_max": 20, "income_min": null, "income_max": null, "occupation": ["All Households"], "category": ["General", "BPL"], "documents_required": ["Aadhaar Card", "Electricity Account ID (Account ID on Bill)", "Rental Agreement or Voter ID (for tenants)"], "application_process": "Apply online via Seva Sindhu Portal under Gruha Jyoti tab.", "official_url": "https://sevasindhugs1.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.439229", "updated_at": "2026-11-15T15:45:00.103321", "computed_category": "Energy & Utilities"}, {"scheme_id": 50, "id": 50, "scheme_name": "Anna Bhagya Scheme", "state": "Karnataka", "department": "Department of Food, Civil Supplies and Consumer Affairs", "description": "Food security scheme providing 10 kg of free rice per person per month to BPL and Antyodaya cardholders.", "benefits": ["10 kg free foodgrains or cash equivalent (DBT) per person per month", "Eradication of hunger and malnutrition in poor households"], "eligibility": ["Families holding BPL (Below Poverty Line) or AAY (Antyodaya Anna Yojana) ration cards in Karnataka", "Family annual income below ₹1.2 lakh"], "age_min": null, "age_max": null, "income_min": null, "income_max": 120000.0, "occupation": ["Worker / Labourer", "Farmer / Agriculture"], "category": ["BPL", "SC", "ST"], "documents_required": ["BPL / AAY Ration Card", "Aadhaar Card of all family members", "Active Bank Account linked with Aadhaar"], "application_process": "Automatic entitlement for valid BPL ration card holders at fair price shops.", "official_url": "https://ahara.kar.nic.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.447592", "updated_at": "2026-11-15T15:45:00.115348", "computed_category": "Food & Civil Supplies"}, {"scheme_id": 51, "id": 51, "scheme_name": "Shakti Scheme (Uchita Prayana)", "state": "Karnataka", "department": "Transport Department, Government of Karnataka", "description": "Free bus travel scheme for women residents of Karnataka across state-run KSRTC, BMTC, NWKRTC, and KKRTC non-AC buses.", "benefits": ["100% free bus travel within Karnataka state borders", "Applicable on ordinary and express bus services"], "eligibility": ["All women, girls, and transgender persons residing in Karnataka", "No age or income limit"], "age_min": null, "age_max": null, "income_min": null, "income_max": null, "occupation": ["Woman / Widow", "Student"], "category": ["General"], "documents_required": ["Shakti Smart Card or Govt Photo ID Card (Aadhaar, Voter ID, Driving License) proving Karnataka address"], "application_process": "Apply for Shakti Smart Card on Seva Sindhu portal or present govt photo ID during bus travel.", "official_url": "https://sevasindhugs1.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.452386", "updated_at": "2026-11-15T15:45:00.120960", "computed_category": "Women & Child Welfare"}, {"scheme_id": 52, "id": 52, "scheme_name": "Ganga Kalyana Scheme", "state": "Karnataka", "department": "Karnataka Minorities / Backward Classes Development Corporation", "description": "Irrigation scheme providing free borewell drilling and pump set installation for small and marginal farmers.", "benefits": ["100% subsidy for borewell drilling and pump installation", "Electrification of borewells up to ₹3.5 lakh value"], "eligibility": ["Small and marginal farmers belonging to SC, ST, OBC, or Minority communities", "Must own between 2 to 5 acres of agricultural land", "Annual family income should not exceed ₹1.5 lakh"], "age_min": 2, "age_max": 5, "income_min": null, "income_max": 150000.0, "occupation": ["Farmer / Agriculture"], "category": ["SC", "ST", "OBC", "Minority", "BPL"], "documents_required": ["RTC / Land Revenue Documents (Pahani)", "Caste and Income Certificate", "Small Farmer Certificate from Tahsildar", "Aadhaar Card", "Bank Passbook"], "application_process": "Apply online via Seva Sindhu or KMDC portal (https://kmdc.karnataka.gov.in/)", "official_url": "https://kmdc.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.461650", "updated_at": "2026-11-15T15:45:00.130565", "computed_category": "Agriculture & Farmers"}, {"scheme_id": 53, "id": 53, "scheme_name": "Karnataka Farmer Vidya Nidhi Scheme", "state": "Karnataka", "department": "Department of Agriculture, Government of Karnataka", "description": "Educational scholarship scheme for children of farmers in Karnataka to pursue higher education.", "benefits": ["Annual scholarship ranging from ₹2,500 to ₹11,000 depending on course level", "Direct Benefit Transfer to student's bank account"], "eligibility": ["Children of registered farmers owning agricultural land in Karnataka", "Enrolled in Class 11, 12, ITI, BA, BSc, BCom, MBBS, BE, or Post-Graduation", "Age of student between 16 and 25 years"], "age_min": 16, "age_max": 25, "income_min": null, "income_max": null, "occupation": ["Farmer / Agriculture", "Student"], "category": ["General", "OBC", "SC", "ST"], "documents_required": ["Farmer FID (FRUITS ID) of parent", "Student Aadhaar Card", "College Admission & Fee receipt"], "application_process": "Automatic scholarship disbursement via SSP portal using FRUITS ID integration.", "official_url": "https://ssp.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.466636", "updated_at": "2026-11-15T15:45:00.136290", "computed_category": "Education & Scholarships"}, {"scheme_id": 54, "id": 54, "scheme_name": "Chief Minister’s Employment Generation Programme (CMEGP)", "state": "Karnataka", "department": "Commerce & Industries Department / KVIC", "description": "Self-employment credit-linked subsidy scheme for setting up micro-enterprises in manufacturing and service sectors.", "benefits": ["Capital subsidy up to 35% for SC/ST/Women/Minority entrepreneurs (max ₹10 lakh subsidy)", "Bank loan assistance up to ₹25 lakh project cost"], "eligibility": ["Applicants must be between 18 and 45 years of age (50 years for SC/ST/Women/Ex-servicemen)", "Minimum 8th standard pass for project cost above ₹10 lakh", "One person per family eligible"], "age_min": 18, "age_max": 45, "income_min": null, "income_max": null, "occupation": ["Entrepreneur / MSME", "Unemployed Youth"], "category": ["General", "SC", "ST", "OBC", "Minority"], "documents_required": ["Detailed Project Report (DPR)", "Aadhaar Card", "Educational Qualification Certificate", "Caste/Category Certificate"], "application_process": "Apply online on CMEGP portal (https://cmegp.kar.nic.in/).", "official_url": "https://cmegp.kar.nic.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.471443", "updated_at": "2026-11-15T15:45:00.142444", "computed_category": "Youth & Employment"}, {"scheme_id": 55, "id": 55, "scheme_name": "Arivu Education Loan Scheme", "state": "Karnataka", "department": "Karnataka Minorities Development Corporation (KMDC)", "description": "Subsidized education loan scheme for minority community students pursuing professional courses.", "benefits": ["Education loan up to ₹3,000,000 at low interest rate of 2% per annum", "Covers Engineering, MBBS, BDS, MBA, MCA, and AYUSH courses"], "eligibility": ["Students belonging to Muslim, Christian, Jain, Buddhist, Sikh, or Parsi communities", "Must be resident of Karnataka", "Annual family income should not exceed ₹8.0 lakh", "Age of student between 17 and 30 years"], "age_min": 17, "age_max": 30, "income_min": null, "income_max": 800000.0, "occupation": ["Student"], "category": ["Minority"], "documents_required": ["CET / NEET Admission Order", "Aadhaar Card", "Income & Minority Certificate", "SSLC & PUC Marksheets"], "application_process": "Apply online via KMDC portal (https://kmdc.karnataka.gov.in/).", "official_url": "https://kmdc.karnataka.gov.in/", "source_date": "2026-10-04", "last_updated": "", "created_at": "2026-10-04T03:39:01.476052", "updated_at": "2026-11-15T15:45:00.146967", "computed_category": "Education & Scholarships"}];
+
+    // State Variables
+    let allSchemes = [...EMBEDDED_SCHEMES];
+    let filteredSchemes = [...EMBEDDED_SCHEMES];
+    let activeCategory = 'all';
+    let activeDepartment = 'all';
+    let searchQuery = '';
+    let sortMode = 'featured';
+    let matchFilterActive = false;
+    // Scheme state
+    // Modal and Drawer replaced by dedicated chatbot.html
+    let allPdfs = [];
+    let chatHistory = [];
+
+    // Citizen Profile State (from localStorage or defaults)
+    let userProfile = {
+      age: null,
+      gender: 'Any',
+      occupation: 'Any',
+      category: 'Any',
+      income: 9999999,
+      state: 'Karnataka'
+    };
+
+    // Category styling metadata
+    const CATEGORY_STYLES = {
+      'Education & Scholarships': { icon: 'fa-graduation-cap', color: 'purple', bg: 'bg-purple-50', border: 'border-purple-100', text: 'text-purple-700', pillBg: 'bg-purple-100' },
+      'Women & Child Welfare': { icon: 'fa-person-dress', color: 'pink', bg: 'bg-pink-50', border: 'border-pink-100', text: 'text-pink-600', pillBg: 'bg-pink-100' },
+      'Youth & Employment': { icon: 'fa-users-gear', color: 'orange', bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', pillBg: 'bg-orange-100' },
+      'Agriculture & Farmers': { icon: 'fa-tractor', color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-700', pillBg: 'bg-emerald-100' },
+      'Energy & Utilities': { icon: 'fa-bolt', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-700', pillBg: 'bg-amber-100' },
+      'Food & Civil Supplies': { icon: 'fa-bowl-rice', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-700', pillBg: 'bg-blue-100' },
+      'Social Security & Welfare': { icon: 'fa-shield-heart', color: 'rose', bg: 'bg-rose-50', border: 'border-rose-100', text: 'text-rose-700', pillBg: 'bg-rose-100' },
+      'Citizen Services & Portals': { icon: 'fa-table-cells-large', color: 'indigo', bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-indigo-700', pillBg: 'bg-indigo-100' }
+    };
+
+    // Initialization on Page Load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSavedProfile();
+      loadChatHistory();
+      fetchLiveSchemes();
+      fetchLivePdfs();
+      fetchLiveStats();
+      renderCategoryPills();
+      populateDepartmentDropdown();
+      renderSchemes();
+    });
+
+    // Fetch Live Schemes from FastAPI backend if online
+    async function fetchLiveSchemes() {
+      try {
+        const res = await fetch('/api/schemes?limit=200');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.schemes && data.schemes.length > 0) {
+            allSchemes = data.schemes;
+            renderCategoryPills();
+            populateDepartmentDropdown();
+            applyFilters();
+            showToast(`Loaded ${allSchemes.length} live verified schemes from database.`, 'success');
+          }
+        }
+      } catch (err) {
+        console.warn('Backend API not responding; using embedded offline schemes dataset.', err);
+      }
+    }
+
+    // Fetch Live Scraped PDFs
+    async function fetchLivePdfs() {
+      try {
+        const res = await fetch('/api/pdfs');
+        if (res.ok) {
+          allPdfs = await res.json();
+          renderPdfs(allPdfs);
+        }
+      } catch (err) {
+        allPdfs = [
+          { id: 1, file_name: 'rti41b_1.pdf', file_size_bytes: 250112, page_url: 'https://ssp.karnataka.gov.in/RTI', status: 'DOWNLOADED' },
+          { id: 2, file_name: 'rti_1.pdf', file_size_bytes: 305156, page_url: 'https://ssp.karnataka.gov.in/RTI', status: 'DOWNLOADED' }
         ];
+        renderPdfs(allPdfs);
+      }
+    }
 
-        async function loadSchemes() {
-            try {
-                // Try fetching cleaned JSON file
-                const response = await fetch('scheme_cleaner/data/cleaned/cleaned_schemes.json');
-                if (response.ok) {
-                    allSchemes = await response.json();
-                } else {
-                    allSchemes = defaultSchemesData;
-                }
-            } catch (err) {
-                console.log("Loading fallback default schemes data...");
-                allSchemes = defaultSchemesData;
-            }
+    // Fetch Live Stats & Vector Metrics
+    async function fetchLiveStats() {
+      try {
+        const res = await fetch('/api/stats');
+        if (res.ok) {
+          const stats = await res.json();
+          if (stats.total_cleaned_schemes) {
+            document.getElementById('stat-schemes-count').textContent = stats.total_cleaned_schemes;
+          }
+          if (stats.total_pdfs) {
+            document.getElementById('stat-pdfs-count').textContent = stats.total_pdfs;
+          }
+        }
+        const ragRes = await fetch('/api/rag/status');
+        if (ragRes.ok) {
+          const ragData = await ragRes.json();
+          if (ragData.data && ragData.data.total_vectors_in_qdrant) {
+            document.getElementById('stat-vectors-count').textContent = ragData.data.total_vectors_in_qdrant;
+          }
+        }
+      } catch (e) {}
+    }
 
-            document.getElementById('scheme-counter').innerHTML = `<i class="fa-solid fa-box-archive me-1"></i> Cleaned Schemes: <strong>${allSchemes.length}</strong>`;
-            renderSchemes(allSchemes);
+    // Profile Management (localStorage)
+    function loadSavedProfile() {
+      try {
+        const saved = localStorage.getItem('schemesathi_user_profile');
+        if (saved) {
+          userProfile = JSON.parse(saved);
+          updateProfileUI();
+        }
+      } catch (e) {}
+    }
+
+    function saveCitizenProfile(e) {
+      e.preventDefault();
+      const ageVal = document.getElementById('profile-age').value;
+      userProfile = {
+        age: ageVal ? parseInt(ageVal, 10) : null,
+        gender: document.getElementById('profile-gender').value,
+        occupation: document.getElementById('profile-occupation').value,
+        category: document.getElementById('profile-category').value,
+        income: parseFloat(document.getElementById('profile-income').value || 9999999),
+        state: 'Karnataka'
+      };
+      localStorage.setItem('schemesathi_user_profile', JSON.stringify(userProfile));
+      updateProfileUI();
+      closeProfileModal();
+      applyFilters();
+      showToast('Profile saved! Eligibility matches updated.', 'success');
+    }
+
+    function clearCitizenProfile() {
+      userProfile = { age: null, gender: 'Any', occupation: 'Any', category: 'Any', income: 9999999, state: 'Karnataka' };
+      localStorage.removeItem('schemesathi_user_profile');
+      updateProfileUI();
+      closeProfileModal();
+      applyFilters();
+      showToast('Profile reset to default citizen mode.', 'info');
+    }
+
+    function updateProfileUI() {
+      const summaryElem = document.getElementById('active-profile-summary');
+      const pillTextElem = document.getElementById('profile-pill-text');
+
+      const parts = [];
+      if (userProfile.occupation && userProfile.occupation !== 'Any') parts.push(userProfile.occupation);
+      if (userProfile.category && userProfile.category !== 'Any') parts.push(userProfile.category);
+      if (userProfile.age) parts.push(`Age: ${userProfile.age}`);
+      if (userProfile.income < 9000000) parts.push(`Income < ₹${(userProfile.income / 100000).toFixed(1)}L`);
+
+      if (parts.length > 0) {
+        const text = parts.join(' • ');
+        summaryElem.textContent = text;
+        pillTextElem.textContent = parts[0] + (parts[1] ? ` | ${parts[1]}` : '');
+      } else {
+        summaryElem.textContent = 'Default: Karnataka Citizen (All Schemes Shown)';
+        pillTextElem.textContent = 'Citizen Profile';
+      }
+    }
+
+    // Check if citizen profile is eligible for a scheme
+    function isCitizenEligible(scheme, profile) {
+      if (!profile || (profile.occupation === 'Any' && profile.category === 'Any' && !profile.age && profile.income >= 9000000)) {
+        return true;
+      }
+
+      // Age check
+      if (profile.age) {
+        if (scheme.age_min && profile.age < scheme.age_min) return false;
+        if (scheme.age_max && profile.age > scheme.age_max) return false;
+      }
+
+      // Income check
+      if (profile.income && scheme.income_max) {
+        if (profile.income > scheme.income_max) return false;
+      }
+
+      // Category check
+      if (profile.category && profile.category !== 'Any' && scheme.category && scheme.category.length > 0) {
+        const catMatch = scheme.category.some(c => c.toLowerCase() === profile.category.toLowerCase() || c.toLowerCase() === 'all' || c.toLowerCase() === 'general');
+        if (!catMatch && !scheme.category.includes('General')) return false;
+      }
+
+      // Occupation check
+      if (profile.occupation && profile.occupation !== 'Any' && scheme.occupation && scheme.occupation.length > 0) {
+        const occMatch = scheme.occupation.some(o => o.toLowerCase().includes(profile.occupation.toLowerCase()) || profile.occupation.toLowerCase().includes(o.toLowerCase()));
+        if (!occMatch) return false;
+      }
+
+      return true;
+    }
+
+    // Render Category Pills
+    function renderCategoryPills() {
+      const container = document.getElementById('category-pills');
+      if (!container) return;
+
+      const counts = { all: allSchemes.length };
+      allSchemes.forEach(s => {
+        const cat = s.computed_category || 'Citizen Services & Portals';
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+
+      const categories = [
+        { key: 'all', name: 'All Schemes', icon: 'fa-table-cells' },
+        { key: 'Education & Scholarships', name: 'Education', icon: 'fa-graduation-cap' },
+        { key: 'Women & Child Welfare', name: 'Women & Child', icon: 'fa-person-dress' },
+        { key: 'Youth & Employment', name: 'Youth & Jobs', icon: 'fa-users-gear' },
+        { key: 'Agriculture & Farmers', name: 'Farmers & Agri', icon: 'fa-tractor' },
+        { key: 'Energy & Utilities', name: 'Energy & Power', icon: 'fa-bolt' },
+        { key: 'Food & Civil Supplies', name: 'Food & Rations', icon: 'fa-bowl-rice' },
+        { key: 'Citizen Services & Portals', name: 'Citizen Portals', icon: 'fa-landmark' }
+      ];
+
+      container.innerHTML = categories.map(cat => {
+        const isActive = activeCategory === cat.key;
+        const count = counts[cat.key] || 0;
+        return `
+          <button 
+            onclick="setCategory('${cat.key}')"
+            class="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 border ${
+              isActive 
+                ? 'bg-brand-purple text-white border-brand-purple shadow-md shadow-purple-200' 
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-purple-50 hover:border-purple-200'
+            }">
+            <i class="fa-solid ${cat.icon} text-xs ${isActive ? 'text-amber-300' : 'text-gray-400'}"></i>
+            <span>${cat.name}</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}">${count}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    // Populate Department Filter Dropdown
+    function populateDepartmentDropdown() {
+      const select = document.getElementById('dept-select');
+      if (!select) return;
+
+      const depts = [...new Set(allSchemes.map(s => s.department).filter(Boolean))].sort();
+      select.innerHTML = '<option value="all">All Departments (' + depts.length + ')</option>' + 
+        depts.map(d => `<option value="${d}">${d.length > 40 ? d.slice(0, 38) + '...' : d}</option>`).join('');
+    }
+
+    // Filter & Search Execution
+    function applyFilters() {
+      filteredSchemes = allSchemes.filter(scheme => {
+        if (activeCategory !== 'all') {
+          const cat = scheme.computed_category || 'Citizen Services & Portals';
+          if (cat !== activeCategory) return false;
         }
 
-        function renderSchemes(schemes) {
-            const grid = document.getElementById('schemeGrid');
-            grid.innerHTML = '';
-
-            if (schemes.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-12 text-center py-5">
-                        <i class="fa-solid fa-folder-open text-muted fa-3x mb-3"></i>
-                        <h5 class="text-secondary fw-bold">No matching schemes found</h5>
-                        <p class="text-muted">Try adjusting your search query or filters.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            schemes.forEach((s, index) => {
-                const box = document.createElement('div');
-                box.className = 'scheme-box';
-
-                // Format badges
-                let ageBadge = s.age_min || s.age_max ? `<span class="badge-chip badge-age"><i class="fa-solid fa-user-clock"></i> Age: ${s.age_min || '0'}-${s.age_max || '60+'} yrs</span>` : '';
-                let incomeBadge = s.income_max ? `<span class="badge-chip badge-income"><i class="fa-solid fa-wallet"></i> Max ₹${formatCurrency(s.income_max)}</span>` : '';
-                let categoryBadges = (s.category || []).map(c => `<span class="badge-chip badge-category"><i class="fa-solid fa-tags"></i> ${c}</span>`).join(' ');
-                let occBadges = (s.occupation || []).map(o => `<span class="badge-chip badge-occupation"><i class="fa-solid fa-user-gear"></i> ${o}</span>`).join(' ');
-
-                box.innerHTML = `
-                    <div class="card-body">
-                        <div class="scheme-box-header">
-                            <span class="state-badge">${s.state || 'Karnataka'}</span>
-                            <i class="fa-solid fa-building-columns text-primary"></i>
-                        </div>
-                        <h3 class="scheme-title">${s.scheme_name}</h3>
-                        <div class="dept-name">${s.department || 'Government of Karnataka'}</div>
-                        <p class="scheme-desc">${stripHTML(s.description)}</p>
-
-                        <div class="d-flex flex-wrap gap-2 mt-auto">
-                            ${ageBadge}
-                            ${incomeBadge}
-                            ${categoryBadges}
-                            ${occBadges}
-                        </div>
-                    </div>
-                    <div class="scheme-box-footer">
-                        <span class="text-muted small"><i class="fa-solid fa-list-check me-1"></i> ${s.eligibility ? s.eligibility.length : 0} Eligibility Criteria</span>
-                        <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="openSchemeModal(${index})">
-                            View Details <i class="fa-solid fa-arrow-right ms-1"></i>
-                        </button>
-                    </div>
-                `;
-                grid.appendChild(box);
-            });
+        if (activeDepartment !== 'all' && scheme.department !== activeDepartment) {
+          return false;
         }
 
-        function filterSchemes() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-
-            const filtered = allSchemes.filter(s => {
-                const matchesQuery = !query ||
-                    s.scheme_name.toLowerCase().includes(query) ||
-                    (s.department && s.department.toLowerCase().includes(query)) ||
-                    (s.description && s.description.toLowerCase().includes(query)) ||
-                    (s.category && s.category.some(c => c.toLowerCase().includes(query))) ||
-                    (s.occupation && s.occupation.some(o => o.toLowerCase().includes(query)));
-
-                const matchesFilter = currentFilter === 'ALL' ||
-                    (s.category && s.category.some(c => c.toLowerCase().includes(currentFilter.toLowerCase()))) ||
-                    (s.occupation && s.occupation.some(o => o.toLowerCase().includes(currentFilter.toLowerCase())));
-
-                return matchesQuery && matchesFilter;
-            });
-
-            renderSchemes(filtered);
+        if (matchFilterActive && !isCitizenEligible(scheme, userProfile)) {
+          return false;
         }
 
-        function setCategoryFilter(filterVal, btnElem) {
-            currentFilter = filterVal;
-            document.querySelectorAll('#filter-chips button').forEach(b => {
-                b.classList.remove('btn-dark', 'active');
-                b.classList.add('btn-outline-secondary');
-            });
-            btnElem.classList.remove('btn-outline-secondary');
-            btnElem.classList.add('btn-dark', 'active');
-            filterSchemes();
+        if (searchQuery && searchQuery.trim() !== '') {
+          const q = searchQuery.toLowerCase().trim();
+          const name = (scheme.scheme_name || '').toLowerCase();
+          const desc = (scheme.description || '').toLowerCase();
+          const dept = (scheme.department || '').toLowerCase();
+          const benefits = (scheme.benefits || []).join(' ').toLowerCase();
+          const elig = (scheme.eligibility || []).join(' ').toLowerCase();
+
+          if (!name.includes(q) && !desc.includes(q) && !dept.includes(q) && !benefits.includes(q) && !elig.includes(q)) {
+            return false;
+          }
         }
 
-        function openSchemeModal(index) {
-            const s = allSchemes[index];
-            document.getElementById('modal-title').innerText = s.scheme_name;
-            document.getElementById('modal-state').innerText = s.state || 'Karnataka';
-            document.getElementById('modal-dept').innerText = s.department || 'Government of Karnataka';
-            document.getElementById('modal-desc').innerText = stripHTML(s.description);
-            document.getElementById('modal-age').innerText = s.age_min || s.age_max ? `${s.age_min || '0'} to ${s.age_max || '60+'} years` : 'No specific age limit';
-            document.getElementById('modal-income').innerText = s.income_max ? `₹${formatCurrency(s.income_max)} per annum` : 'No income cap specified';
+        return true;
+      });
 
-            // Benefits
-            const bList = document.getElementById('modal-benefits');
-            bList.innerHTML = (s.benefits && s.benefits.length) ? s.benefits.map(b => `<li class="mb-1">${b}</li>`).join('') : '<li class="text-muted">No specific benefits listed</li>';
+      if (sortMode === 'name_asc') {
+        filteredSchemes.sort((a, b) => a.scheme_name.localeCompare(b.scheme_name));
+      } else if (sortMode === 'income_asc') {
+        filteredSchemes.sort((a, b) => (a.income_max || 9999999) - (b.income_max || 9999999));
+      }
 
-            // Eligibility
-            const eList = document.getElementById('modal-eligibility');
-            eList.innerHTML = (s.eligibility && s.eligibility.length) ? s.eligibility.map(e => `<li class="mb-1">${e}</li>`).join('') : '<li class="text-muted">Standard criteria applies</li>';
+      renderSchemes();
+      updateFilterSummaryUI();
+    }
 
-            // Documents
-            const dList = document.getElementById('modal-docs');
-            dList.innerHTML = (s.documents_required && s.documents_required.length) ? s.documents_required.map(d => `<li class="mb-1">${d}</li>`).join('') : '<li class="text-muted">No documents specified</li>';
+    function updateFilterSummaryUI() {
+      const countElem = document.getElementById('visible-schemes-count');
+      const resetBtn = document.getElementById('reset-filters-btn');
+      const indicator = document.getElementById('active-filter-indicator');
+      const noResults = document.getElementById('no-results-state');
 
-            document.getElementById('modal-process').innerText = s.application_process || 'Apply online via official government portal.';
-            document.getElementById('modal-date').innerText = s.source_date || 'Recent';
+      countElem.textContent = filteredSchemes.length;
+
+      const hasActiveFilters = activeCategory !== 'all' || activeDepartment !== 'all' || searchQuery !== '' || matchFilterActive;
+      
+      if (hasActiveFilters) {
+        resetBtn.classList.remove('hidden');
+        indicator.classList.remove('hidden');
+        const filterNames = [];
+        if (activeCategory !== 'all') filterNames.push(activeCategory);
+        if (activeDepartment !== 'all') filterNames.push('Department');
+        if (searchQuery) filterNames.push(`"${searchQuery}"`);
+        if (matchFilterActive) filterNames.push('Eligible Only');
+        indicator.textContent = filterNames.join(' • ');
+      } else {
+        resetBtn.classList.add('hidden');
+        indicator.classList.add('hidden');
+      }
+
+      if (filteredSchemes.length === 0) {
+        noResults.classList.remove('hidden');
+      } else {
+        noResults.classList.add('hidden');
+      }
+    }
+
+    // Render Scheme Cards Grid
+    function renderSchemes() {
+      const container = document.getElementById('schemes-container');
+      if (!container) return;
+
+      container.innerHTML = filteredSchemes.map(scheme => {
+        const cat = scheme.computed_category || 'Citizen Services & Portals';
+        const style = CATEGORY_STYLES[cat] || CATEGORY_STYLES['Citizen Services & Portals'];
+        const isEligible = isCitizenEligible(scheme, userProfile);
+
+        // Highlight
+        let highlight = '';
+        if (scheme.benefits && scheme.benefits.length > 0) {
+          highlight = scheme.benefits[0];
+          if (highlight.length > 60) highlight = highlight.slice(0, 58) + '...';
+        } else if (scheme.description) {
+          highlight = scheme.description.slice(0, 60) + '...';
+        }
+
+        // Clean Description
+        const cleanDesc = (scheme.description || '')
+          .replace(/<[^>]*>?/gm, '')
+          .trim();
+
+        const shortDesc = cleanDesc.length > 110 ? cleanDesc.slice(0, 108) + '...' : cleanDesc;
+
+        // Tags
+        const tags = [];
+        if (scheme.age_min || scheme.age_max) {
+          tags.push(`Age: ${scheme.age_min || 'Any'}-${scheme.age_max || 'Any'}`);
+        }
+        if (scheme.income_max) {
+          tags.push(`Income < ₹${(scheme.income_max / 100000).toFixed(1)}L`);
+        }
+        if (scheme.category && scheme.category.length > 0) {
+          tags.push(scheme.category.slice(0, 2).join(', '));
+        }
+
+        return `
+          <div class="bg-white border border-gray-200/80 rounded-2xl p-5 flex flex-col justify-between card-hover relative group shadow-xs">
             
-            const urlBtn = document.getElementById('modal-url');
-            if (s.official_url) {
-                urlBtn.href = s.official_url;
-                urlBtn.style.display = 'inline-block';
-            } else {
-                urlBtn.style.display = 'none';
-            }
+            <!-- Top Card Header -->
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl ${style.bg} flex items-center justify-center border ${style.border} shrink-0">
+                  <i class="fa-solid ${style.icon} ${style.text} text-lg"></i>
+                </div>
+                
+                <div class="flex flex-col items-end gap-1">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wider">
+                    ${scheme.state || 'Karnataka'}
+                  </span>
+                  ${
+                    isEligible 
+                      ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1"><i class="fa-solid fa-check text-[9px]"></i> Eligible</span>' 
+                      : ''
+                  }
+                </div>
+              </div>
 
-            const modal = new bootstrap.Modal(document.getElementById('schemeModal'));
-            modal.show();
-        }
+              <div class="text-[11px] font-semibold text-brand-purple mb-1 truncate" title="${scheme.department || ''}">
+                ${scheme.department || 'Government of Karnataka'}
+              </div>
 
-        function formatCurrency(val) {
-            if (!val) return '0';
-            if (val >= 100000) return (val / 100000).toFixed(1) + ' Lakh';
-            return val.toLocaleString('en-IN');
-        }
+              <h3 class="font-bold text-base text-gray-900 leading-snug group-hover:text-brand-purple transition-colors line-clamp-2 mb-2">
+                ${scheme.scheme_name}
+              </h3>
 
-        function stripHTML(html) {
-            let tmp = document.createElement("DIV");
-            tmp.innerHTML = html || "";
-            return tmp.textContent || tmp.innerText || "";
-        }
+              <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                ${shortDesc || 'Official government welfare initiative providing structured citizen support.'}
+              </p>
+            </div>
 
-        // Initialize Page
-        loadSchemes();
-    </script>
+            <!-- Card Bottom & Actions -->
+            <div class="pt-4 border-t border-gray-100 space-y-3">
+              
+              <!-- Tag Chips -->
+              <div class="flex flex-wrap gap-1.5 text-[10px]">
+                ${tags.map(t => `<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">${t}</span>`).join('')}
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-between gap-2 pt-1">
+                <a 
+                  href="chatbot.html?scheme=${encodeURIComponent(scheme.scheme_name)}&id=${scheme.id}"
+                  class="flex-1 bg-gradient-to-r from-brand-purple to-indigo-700 hover:from-brand-dark hover:to-indigo-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-purple-200 transition-all flex items-center justify-center gap-2 group-hover:scale-[1.01]">
+                  <i class="fa-solid fa-comments text-amber-300 text-sm"></i>
+                  <span>Chat with Scheme AI</span>
+                  <i class="fa-solid fa-arrow-right text-[10px] opacity-75"></i>
+                </a>
+
+                ${
+                  scheme.official_url 
+                    ? `<a href="${scheme.official_url}" target="_blank" rel="noopener" title="Official Government Portal" class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-brand-purple flex items-center justify-center text-xs transition-colors shrink-0">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                      </a>` 
+                    : ''
+                }
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Scraped PDFs
+    function renderPdfs(pdfs) {
+      const container = document.getElementById('pdfs-container');
+      if (!container) return;
+
+      if (!pdfs || pdfs.length === 0) {
+        container.innerHTML = '<div class="col-span-3 text-center py-6 text-xs text-gray-500">No PDF documents discovered yet.</div>';
+        return;
+      }
+
+      container.innerHTML = pdfs.map(pdf => {
+        const sizeMb = pdf.file_size_bytes ? (pdf.file_size_bytes / (1024 * 1024)).toFixed(2) + ' MB' : 'PDF Document';
+        const downloadUrl = `/api/pdf-download/${pdf.id}`;
+        return `
+          <div class="bg-white rounded-2xl p-5 border border-gray-200 flex flex-col justify-between card-hover shadow-xs">
+            <div class="flex items-start gap-3">
+              <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl shrink-0 border border-rose-100">
+                <i class="fa-solid fa-file-pdf"></i>
+              </div>
+              <div class="truncate">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600 uppercase">OFFICIAL NOTICE</span>
+                <h4 class="font-bold text-sm text-gray-900 truncate mt-1" title="${pdf.file_name}">
+                  ${pdf.file_name}
+                </h4>
+                <div class="text-[11px] text-gray-400 mt-0.5">${sizeMb} • Verified Government Source</div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <a href="${pdf.page_url || '#'}" target="_blank" rel="noopener" class="text-xs text-gray-500 hover:text-brand-purple flex items-center gap-1">
+                <i class="fa-solid fa-globe text-[10px]"></i> Source Portal
+              </a>
+              <a href="${downloadUrl}" download class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-download text-xs"></i> Download PDF
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Scheme AI Direct Chat Redirect
+    function askAIAboutScheme(schemeId) {
+      const scheme = allSchemes.find(s => s.id === schemeId);
+      if (scheme) {
+        window.location.href = `chatbot.html?scheme=${encodeURIComponent(scheme.scheme_name)}&id=${scheme.id}`;
+      } else {
+        window.location.href = 'chatbot.html';
+      }
+    }
+
+    // Filter controls handlers
+    function setCategory(catKey) {
+      activeCategory = catKey;
+      renderCategoryPills();
+      applyFilters();
+    }
+
+    function filterByDepartment(dept) {
+      activeDepartment = dept;
+      applyFilters();
+    }
+
+    function handleSort(sort) {
+      sortMode = sort;
+      applyFilters();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (val && val.trim() !== '') {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      applyFilters();
+    }
+
+    function clearSearch() {
+      document.getElementById('scheme-search-input').value = '';
+      searchQuery = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      applyFilters();
+    }
+
+    function setSearchQuery(term) {
+      document.getElementById('scheme-search-input').value = term;
+      searchQuery = term;
+      document.getElementById('clear-search-btn').classList.remove('hidden');
+      applyFilters();
+      document.getElementById('schemes').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function toggleMatchFilter(isChecked) {
+      matchFilterActive = isChecked;
+      applyFilters();
+      if (isChecked) {
+        showToast('Showing only schemes matching your citizen profile.', 'info');
+      }
+    }
+
+    function resetAllFilters() {
+      activeCategory = 'all';
+      activeDepartment = 'all';
+      searchQuery = '';
+      matchFilterActive = false;
+      document.getElementById('scheme-search-input').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      document.getElementById('toggle-match-filter').checked = false;
+      document.getElementById('dept-select').value = 'all';
+      document.getElementById('sort-select').value = 'featured';
+      renderCategoryPills();
+      applyFilters();
+      showToast('Filters reset to all schemes.', 'info');
+    }
+
+    // Profile Modal Open/Close
+    function openProfileModal() {
+      if (userProfile.age) document.getElementById('profile-age').value = userProfile.age;
+      document.getElementById('profile-gender').value = userProfile.gender || 'Any';
+      document.getElementById('profile-occupation').value = userProfile.occupation || 'Any';
+      document.getElementById('profile-category').value = userProfile.category || 'Any';
+      if (userProfile.income) document.getElementById('profile-income').value = userProfile.income;
+      document.getElementById('profile-modal-backdrop').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal-backdrop').classList.add('hidden');
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Navigation to Dedicated Scheme AI Chatbot
+    function toggleAIChatDrawer() {
+      window.location.href = 'chatbot.html';
+    }
+
+    function scrollToAIChatOrOpenDrawer() {
+      window.location.href = 'chatbot.html';
+    }
+
+    function loadChatHistory() {}
+
+    // Toast Notifications
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msgElem = document.getElementById('toast-msg');
+      const icon = document.getElementById('toast-icon');
+
+      msgElem.textContent = msg;
+      if (type === 'success') {
+        icon.className = 'fa-solid fa-circle-check text-emerald-400';
+      } else if (type === 'error') {
+        icon.className = 'fa-solid fa-triangle-exclamation text-rose-400';
+      } else {
+        icon.className = 'fa-solid fa-info-circle text-amber-400';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+  </script>
 </body>
+
 </html>

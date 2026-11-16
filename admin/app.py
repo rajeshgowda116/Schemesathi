@@ -38,6 +38,13 @@ CLEANED_DIR = BASE_DIR / "scheme_cleaner" / "data" / "cleaned"
 if CLEANED_DIR.exists():
     app.mount("/scheme_cleaner/data/cleaned", StaticFiles(directory=str(CLEANED_DIR)), name="cleaned_data")
 
+# Mount RAG and Synchronization Routers
+from backend.app.api.sync import router as rag_sync_router
+from backend.app.api.rag import router as rag_chat_router
+
+app.include_router(rag_sync_router)
+app.include_router(rag_chat_router)
+
 # Global scraper status lock
 scraper_running = False
 current_scraper_logs: List[str] = []
@@ -61,28 +68,201 @@ def run_scraper_in_background():
 
 
 @app.get("/", response_class=HTMLResponse)
-@app.get("/admin", response_class=HTMLResponse)
-def admin_dashboard(request: Request):
-    """Renders the main Admin Dashboard UI."""
-    return templates.TemplateResponse(request=request, name="dashboard.html")
-
-
 @app.get("/schemes", response_class=HTMLResponse)
-def schemes_dashboard():
-    """Renders the Cleaned Schemes Box Grid UI (index.html)."""
+@app.get("/index.html", response_class=HTMLResponse)
+def citizen_portal():
+    """Renders the main SchemeSathi Citizen Portal UI (index.html)."""
     index_path = BASE_DIR / "index.html"
     if index_path.exists():
         return FileResponse(str(index_path))
     return HTMLResponse("<h1>index.html not found</h1>", status_code=404)
 
 
+@app.get("/chatbot", response_class=HTMLResponse)
+@app.get("/chatbot.html", response_class=HTMLResponse)
+@app.get("/chat", response_class=HTMLResponse)
+def chatbot_portal():
+    """Renders the dedicated SchemeSathi Scheme Chatbot UI (chatbot.html)."""
+    chat_path = BASE_DIR / "chatbot.html"
+    if chat_path.exists():
+        return FileResponse(str(chat_path))
+    return HTMLResponse("<h1>chatbot.html not found</h1>", status_code=404)
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_dashboard(request: Request):
+    """Renders the main Admin Dashboard UI."""
+    return templates.TemplateResponse(request=request, name="dashboard.html")
+
+
+def categorize_scheme_record(s: dict) -> str:
+    """Categorizes a scheme record into a standard citizen-friendly domain."""
+    name = (s.get("scheme_name") or "").lower()
+    dept = (s.get("department") or "").lower()
+    desc = (s.get("description") or "").lower()
+    occ = [str(o).lower() for o in s.get("occupation") or []]
+
+    if "shakti" in name or "lakshmi" in name or "women" in name or "widow" in occ:
+        return "Women & Child Welfare"
+    if "yuva nidhi" in name or "cmegp" in name or "unemployed youth" in occ:
+        return "Youth & Employment"
+    if "ganga kalyana" in name or "krishi" in name or "farmer" in name or "agriculture" in dept:
+        if "vidya" in name or "scholarship" in name:
+            return "Education & Scholarships"
+        return "Agriculture & Farmers"
+    if any(k in name or k in desc for k in ["scholarship", "vidya", "education", "arivu", "post-matric"]) or "student" in occ:
+        return "Education & Scholarships"
+    if "jyoti" in name or "energy" in dept or "electricity" in desc:
+        return "Energy & Utilities"
+    if "anna bhagya" in name or "food" in dept or "ration" in desc:
+        return "Food & Civil Supplies"
+    if any(k in name or k in desc for k in ["pension", "differently abled", "disability", "senior"]):
+        return "Social Security & Welfare"
+    return "Citizen Services & Portals"
+
+
+@app.get("/api/schemes")
+def api_get_schemes(
+    q: Optional[str] = Query(None, description="Search query for name, description, benefits"),
+    category: Optional[str] = Query(None, description="Category filter"),
+    department: Optional[str] = Query(None, description="Department filter"),
+    occupation: Optional[str] = Query(None, description="Occupation filter"),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0)
+):
+    """Returns clean, structured schemes list with search and filter capabilities."""
+    from backend.app.ingestion.mysql_scheme_loader import MySQLSchemeLoader
+    loader = MySQLSchemeLoader()
+    raw_schemes = loader.load_clean_schemes()
+
+    # Normalize parameters if invoked directly
+    q_val = q.strip().lower() if isinstance(q, str) and q.strip() else None
+    cat_val = category.strip().lower() if isinstance(category, str) and category.strip() and category.strip().lower() != "all" else None
+    dept_val = department.strip().lower() if isinstance(department, str) and department.strip() and department.strip().lower() != "all" else None
+    occ_val = occupation.strip().lower() if isinstance(occupation, str) and occupation.strip() and occupation.strip().lower() != "all" else None
+    limit_val = limit if isinstance(limit, int) else 100
+    offset_val = offset if isinstance(offset, int) else 0
+
+    enriched = []
+    for s in raw_schemes:
+        s["computed_category"] = categorize_scheme_record(s)
+        enriched.append(s)
+
+    # Search filter
+    if q_val:
+        enriched = [
+            s for s in enriched
+            if q_val in (s.get("scheme_name") or "").lower()
+            or q_val in (s.get("description") or "").lower()
+            or q_val in (s.get("department") or "").lower()
+            or any(q_val in str(b).lower() for b in s.get("benefits") or [])
+            or any(q_val in str(e).lower() for e in s.get("eligibility") or [])
+        ]
+
+    # Category filter
+    if cat_val:
+        enriched = [s for s in enriched if cat_val in s["computed_category"].lower()]
+
+    # Department filter
+    if dept_val:
+        enriched = [s for s in enriched if dept_val in (s.get("department") or "").lower()]
+
+    # Occupation filter
+    if occ_val:
+        enriched = [
+            s for s in enriched
+            if any(occ_val in str(o).lower() for o in s.get("occupation") or [])
+            or occ_val in (s.get("description") or "").lower()
+        ]
+
+    total = len(enriched)
+    paginated = enriched[offset_val:offset_val + limit_val]
+
+    # Count categories for filter badges
+    cat_counts = {}
+    for s in raw_schemes:
+        cat = categorize_scheme_record(s)
+        cat_counts[cat] = cat_counts.get(cat, 0) + 1
+
+    return {
+        "status": "SUCCESS",
+        "total": total,
+        "category_counts": cat_counts,
+        "schemes": paginated
+    }
+    cat_counts = {}
+    for s in raw_schemes:
+        cat = categorize_scheme_record(s)
+        cat_counts[cat] = cat_counts.get(cat, 0) + 1
+
+    return {
+        "status": "SUCCESS",
+        "total": total,
+        "category_counts": cat_counts,
+        "schemes": paginated
+    }
+
+
+@app.get("/api/schemes/{scheme_id}")
+def api_get_scheme_detail(scheme_id: int):
+    """Returns full details of a specific cleaned scheme."""
+    from backend.app.ingestion.mysql_scheme_loader import MySQLSchemeLoader
+    loader = MySQLSchemeLoader()
+    scheme = loader.get_scheme_by_id(scheme_id)
+    if not scheme:
+        raise HTTPException(status_code=404, detail="Scheme not found")
+    scheme["computed_category"] = categorize_scheme_record(scheme)
+    return {
+        "status": "SUCCESS",
+        "scheme": scheme
+    }
+
+
+@app.get("/api/departments")
+def api_get_departments():
+    """Returns unique departments list across all active schemes."""
+    from backend.app.ingestion.mysql_scheme_loader import MySQLSchemeLoader
+    loader = MySQLSchemeLoader()
+    schemes = loader.load_clean_schemes()
+    depts = sorted(list(set(s.get("department") for s in schemes if s.get("department"))))
+    return {
+        "status": "SUCCESS",
+        "departments": depts
+    }
+
+
 @app.get("/api/stats")
 def api_get_stats(db: Session = Depends(get_db)):
-    """Returns overview statistics of scraped pages and PDFs."""
+    """Returns overview statistics of scraped pages, PDFs, and cleaned schemes."""
     stats = get_stats(db)
     if scraper_running:
         stats["last_scrape"]["status"] = "RUNNING"
+
+    # Query cleaned schemes count from database
+    try:
+        from scheme_cleaner.database import SessionLocal as CleanedSession, SchemeModel
+        c_db = CleanedSession()
+        stats["total_cleaned_schemes"] = c_db.query(SchemeModel).count()
+        c_db.close()
+    except Exception:
+        stats["total_cleaned_schemes"] = 0
+
     return stats
+
+
+@app.post("/api/clean")
+def api_trigger_clean():
+    """Triggers the SchemeCleaner Pipeline to re-clean and synchronize all scraped schemes."""
+    try:
+        from scheme_cleaner.pipeline import SchemeDataPipeline
+        pipeline = SchemeDataPipeline()
+        res = pipeline.run_pipeline()
+        return {
+            "status": "SUCCESS",
+            "message": f"Pipeline completed! Cleaned {res.get('cleaned_records', 0)} schemes, {res.get('total_schemes_exported', 0)} total live in DB and UI."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/data")
@@ -106,6 +286,9 @@ def api_get_data(
             "url": p.url,
             "domain": p.domain,
             "title": p.title,
+            "page_type": getattr(p, "page_type", "GENERAL") or "GENERAL",
+            "parent_url": getattr(p, "parent_url", None),
+            "target_redirect_url": getattr(p, "target_redirect_url", None),
             "status": p.status,
             "http_status": p.http_status,
             "pdf_count": p.pdf_count,
@@ -127,6 +310,9 @@ def api_get_data_detail(page_id: int, db: Session = Depends(get_db)):
         "url": page.url,
         "domain": page.domain,
         "title": page.title,
+        "page_type": getattr(page, "page_type", "GENERAL") or "GENERAL",
+        "parent_url": getattr(page, "parent_url", None),
+        "target_redirect_url": getattr(page, "target_redirect_url", None),
         "status": page.status,
         "content_text": page.content_text,
         "raw_html": page.raw_html,

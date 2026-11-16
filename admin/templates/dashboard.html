@@ -133,7 +133,13 @@
                 <h3 class="fw-bold mb-1">Web Scraper Admin Panel</h3>
                 <p class="text-muted mb-0">Monitor & manage scraped data from Karnataka Government Portals</p>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                <a href="/schemes" target="_blank" class="btn btn-outline-secondary px-3 py-2">
+                    <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Public Schemes Portal
+                </a>
+                <button class="btn btn-success px-3 py-2" onclick="triggerClean()">
+                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Clean & Structure Schemes
+                </button>
                 <button class="btn btn-primary px-4 py-2" onclick="triggerScrape()">
                     <i class="fa-solid fa-play me-2"></i> Run Scraper Now
                 </button>
@@ -143,8 +149,8 @@
         <!-- TAB 1: OVERVIEW -->
         <div id="tab-overview" class="tab-pane">
             <!-- Stat Cards Row -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-3">
+            <div class="row g-3 mb-4">
+                <div class="col-md">
                     <div class="card stat-card p-3">
                         <div class="d-flex align-items-center">
                             <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
@@ -157,7 +163,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md">
                     <div class="card stat-card p-3">
                         <div class="d-flex align-items-center">
                             <div class="stat-icon bg-danger bg-opacity-10 text-danger me-3">
@@ -170,7 +176,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md">
                     <div class="card stat-card p-3">
                         <div class="d-flex align-items-center">
                             <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
@@ -183,7 +189,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md">
+                    <div class="card stat-card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-info bg-opacity-10 text-info me-3">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Cleaned Schemes (DB)</div>
+                                <h3 class="fw-bold mb-0" id="stat-cleaned-schemes">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md">
                     <div class="card stat-card p-3">
                         <div class="d-flex align-items-center">
                             <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
@@ -392,6 +411,7 @@
                 document.getElementById('stat-total-pages').innerText = data.total_pages_scraped || 0;
                 document.getElementById('stat-total-pdfs').innerText = data.total_pdfs || 0;
                 document.getElementById('stat-pdf-size').innerText = data.total_pdf_size_formatted || '0 B';
+                document.getElementById('stat-cleaned-schemes').innerText = data.total_cleaned_schemes || 0;
 
                 const statusBadge = document.getElementById('stat-last-status');
                 statusBadge.innerText = data.last_scrape.status || 'IDLE';
@@ -426,12 +446,32 @@
                 }
 
                 items.forEach(item => {
+                    let typeBadge = '<span class="badge bg-secondary">Page</span>';
+                    if (item.page_type === 'APPLICATION_FORM') {
+                        typeBadge = '<span class="badge bg-warning text-dark"><i class="fa-solid fa-file-pen me-1"></i> Application Form</span>';
+                    } else if (item.page_type === 'SCHEME') {
+                        typeBadge = '<span class="badge bg-primary"><i class="fa-solid fa-landmark me-1"></i> Scheme</span>';
+                    } else if (item.page_type === 'HOME') {
+                        typeBadge = '<span class="badge bg-info text-dark"><i class="fa-solid fa-house me-1"></i> Home</span>';
+                    }
+
+                    let redirectInfo = '';
+                    if (item.target_redirect_url) {
+                        redirectInfo = `<div class="small text-muted mt-1"><i class="fa-solid fa-arrow-turn-down me-1 text-primary"></i> Redirect: <a href="${item.target_redirect_url}" target="_blank" class="text-truncate d-inline-block text-secondary" style="max-width: 200px;">${item.target_redirect_url}</a></div>`;
+                    }
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${item.id}</td>
-                        <td class="fw-bold text-truncate" style="max-width: 220px;">${item.title || 'Untitled'}</td>
+                        <td class="fw-bold text-truncate" style="max-width: 240px;">
+                            ${item.title || 'Untitled'}
+                            <div class="mt-1">${typeBadge}</div>
+                        </td>
                         <td><span class="badge bg-light text-dark border">${item.domain}</span></td>
-                        <td><a href="${item.url}" target="_blank" class="text-decoration-none text-truncate d-inline-block" style="max-width: 250px;">${item.url}</a></td>
+                        <td>
+                            <a href="${item.url}" target="_blank" class="text-decoration-none text-truncate d-inline-block" style="max-width: 250px;">${item.url}</a>
+                            ${redirectInfo}
+                        </td>
                         <td><span class="badge ${item.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'}">${item.status}</span></td>
                         <td><span class="badge bg-secondary">${item.pdf_count}</span></td>
                         <td>${new Date(item.scraped_at).toLocaleString()}</td>
@@ -500,6 +540,18 @@
                 modal.show();
             } catch (err) {
                 alert("Failed to load page details: " + err);
+            }
+        }
+
+        async function triggerClean() {
+            if (!confirm("Run Scheme Cleaner Pipeline now to extract, validate, and synchronize all schemes?")) return;
+            try {
+                const res = await fetch('/api/clean', { method: 'POST' });
+                const data = await res.json();
+                alert(data.message);
+                fetchStats();
+            } catch (err) {
+                alert("Failed to run cleaner pipeline: " + err);
             }
         }
 

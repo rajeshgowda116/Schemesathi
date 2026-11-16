@@ -12,8 +12,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("=" * 60)
-    print("🚀 SCHEMESATHI WEB SCRAPER & FASTAPI ADMIN PANEL")
-    print(f"🌐 Admin Panel URL: http://{args.host}:{args.port}/admin")
+    print("🚀 SCHEMESATHI CITIZEN PORTAL & ADMIN PANEL")
+    print(f"🏛️ Citizen Schemes Portal: http://{args.host}:{args.port}/")
+    print(f"🤖 AI Assistant Chat: http://{args.host}:{args.port}/chat")
+    print(f"🌐 Admin Dashboard URL: http://{args.host}:{args.port}/admin")
     print(f"📊 API Documentation: http://{args.host}:{args.port}/docs")
     print("=" * 60)
 
